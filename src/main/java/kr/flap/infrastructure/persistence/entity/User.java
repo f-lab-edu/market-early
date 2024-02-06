@@ -55,6 +55,9 @@ public class User extends BaseTimeEntity {
   //추후에 PasswordEncoder를 사용하여 암호화
   private String password;
 
+  @OneToOne(fetch = FetchType.LAZY)
+  private Cart cart;
+
   @OneToMany(mappedBy = "user")
   private List<UserAddress> userAddressList = new ArrayList<>();
 
