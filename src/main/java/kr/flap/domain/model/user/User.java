@@ -3,6 +3,7 @@ package kr.flap.domain.model.user;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import kr.flap.domain.model.cart.Cart;
+import kr.flap.domain.model.order.Order;
 import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.common.BaseTimeEntity;
 import kr.flap.domain.model.user.enums.UserGender;
@@ -61,6 +62,9 @@ public class User extends BaseTimeEntity {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Reserve> reserveList = new ArrayList<>();
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Order> orderList = new ArrayList<>();
 
   @Builder
   public User(String nickname, UserStatus status, UserRole role,

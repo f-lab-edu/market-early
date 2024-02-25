@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -28,9 +29,12 @@ public class Product extends BaseTimeEntity {
   @JoinColumn(name = "seller_id")
   public Seller seller;
 
+  @Transient
+  private static AtomicInteger numberIncrease;
+
   @Column(name = "product_no")
   @GeneratedValue(strategy = GenerationType.AUTO)
-  public BigInteger productNo;
+  private BigInteger productNo;
 
   @Column(name = "short_description")
   public String shortDescription;
@@ -44,6 +48,11 @@ public class Product extends BaseTimeEntity {
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   public List<SubProduct> subProducts = new ArrayList<>();
 
+  private void setProductNo() {
+    Number productNo = numberIncrease == null ? numberIncrease = new AtomicInteger(0) : numberIncrease.incrementAndGet();
+    this.productNo = BigInteger.valueOf(productNo.intValue());
+  }
+
   @Builder
   public Product(Storage storage, Seller seller, String shortDescription, LocalDate expirationDate, String mainImageUrl) {
     this.storage = storage;
@@ -51,5 +60,6 @@ public class Product extends BaseTimeEntity {
     this.shortDescription = shortDescription;
     this.expirationDate = expirationDate;
     this.mainImageUrl = mainImageUrl;
+    this.setProductNo();
   }
 }

@@ -39,8 +39,8 @@ public class CartProduct extends BaseTimeEntity {
     this.quantity = quantity;
     this.productPrice = productPrice;
 
-    if(cart == null && product == null) {
-      throw new IllegalArgumentException("장바구니와 상품 둘중 하나가 필요합니다.");
-    }
+//    if(cart == null && product == null) {
+//      throw new IllegalArgumentException("장바구니와 상품 둘중 하나가 필요합니다.");
+//    }
   }
 }

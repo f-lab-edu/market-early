@@ -28,4 +28,9 @@ public class Cart extends BaseTimeEntity {
   public Cart(User user) {
     this.user = user;
   }
+
+  public void setUserCart(User user) {
+    this.user = user;
+    user.setCart(this);
+  }
 }

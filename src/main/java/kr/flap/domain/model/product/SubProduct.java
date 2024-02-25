@@ -3,9 +3,14 @@ package kr.flap.domain.model.product;
 import jakarta.persistence.*;
 import kr.flap.domain.model.common.BaseTimeEntity;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -30,7 +35,9 @@ public class SubProduct extends BaseTimeEntity {
 
   public String brand;
 
-  public String tag;
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(columnDefinition = "longtext")
+  public Map<String, Object> tag = new HashMap<>();
 
   @Column(name = "base_price")
   public BigDecimal basePrice;
@@ -62,7 +69,7 @@ public class SubProduct extends BaseTimeEntity {
   public Boolean isPurchaseStatus;
 
   @Builder
-  public SubProduct(Product product, Category category, String name, String brand, String tag, BigDecimal basePrice, BigDecimal retailPrice, Integer discountRate, BigDecimal discountPrice, Integer restock, Boolean canRestockNotify, Integer minQuantity, Integer maxQuantity, Boolean isSoldOut, Boolean isPurchaseStatus) {
+  public SubProduct(Product product, Category category, String name, String brand, Map<String, Object> tag, BigDecimal basePrice, BigDecimal retailPrice, Integer discountRate, BigDecimal discountPrice, Integer restock, Boolean canRestockNotify, Integer minQuantity, Integer maxQuantity, Boolean isSoldOut, Boolean isPurchaseStatus) {
     this.product = product;
     this.category = category;
     this.name = name;

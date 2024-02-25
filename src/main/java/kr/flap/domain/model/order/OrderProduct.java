@@ -2,6 +2,7 @@ package kr.flap.domain.model.order;
 
 import jakarta.persistence.*;
 import kr.flap.domain.model.common.BaseTimeEntity;
+import kr.flap.domain.model.product.Product;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -38,8 +39,8 @@ public class OrderProduct extends BaseTimeEntity {
     this.quantity = quantity;
     this.productPrice = productPrice;
 
-    if(order == null && product == null) {
-      throw new IllegalArgumentException("주문과 상품 둘중 하나가 필요합니다.");
-    }
+//    if(order == null && product == null) {
+//      throw new IllegalArgumentException("주문과 상품 둘중 하나가 필요합니다.");
+//    }
   }
 }
