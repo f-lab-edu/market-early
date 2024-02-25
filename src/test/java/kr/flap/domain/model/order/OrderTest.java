@@ -1,12 +1,21 @@
 package kr.flap.domain.model.order;
 
 import jakarta.transaction.Transactional;
+import kr.flap.domain.model.cart.Cart;
+import kr.flap.domain.model.cart.CartProduct;
+import kr.flap.domain.model.cart.CartProductRepository;
+import kr.flap.domain.model.cart.CartRepository;
+import kr.flap.domain.model.order.enums.DeliveryStatus;
+import kr.flap.domain.model.order.enums.OrderStatus;
+import kr.flap.domain.model.product.*;
 import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.reserve.ReserveRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import kr.flap.domain.model.user.User;
+import kr.flap.domain.model.user.UserAddress;
+import kr.flap.domain.model.user.UserAddressRepository;
+import kr.flap.domain.model.user.UserRepository;
+import kr.flap.factory.FakeDataFactory;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -21,19 +30,21 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static kr.flap.factory.FakeDataFactory.*;
-import static kr.flap.model.user.UserGrade.*;
-import static kr.flap.model.user.UserRole.ADMIN;
-import static kr.flap.model.user.UserRole.USER;
-import static kr.flap.model.user.UserStatus.ACTIVE;
-import static kr.flap.model.user.UserStatus.INACTIVE;
+import static kr.flap.domain.model.user.enums.UserGrade.*;
+import static kr.flap.domain.model.user.enums.UserRole.ADMIN;
+import static kr.flap.domain.model.user.enums.UserRole.USER;
+import static kr.flap.domain.model.user.enums.UserStatus.ACTIVE;
+import static kr.flap.domain.model.user.enums.UserStatus.INACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
-//@DataJpaTest()
-@SpringBootTest
-@Rollback(value = false)
+@DataJpaTest()
 @TestPropertySource(locations = "classpath:application-test.yml")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class OrderTest {
@@ -47,25 +58,192 @@ class OrderTest {
   @Autowired
   ReserveRepository reserveRepository;
 
-  private List<User> fixUserData;
-  private List<UserAddress> fixAddressData;
+  @Autowired
+  CartRepository cartRepository;
 
-  private List<BigInteger> userIdList = new ArrayList<>();
+  @Autowired
+  CartProductRepository cartProductRepository;
 
-  private List<Reserve> fixReserveData;
+  @Autowired
+  ProductRepository productRepository;
+
+  @Autowired
+  SubProductRepository subProductRepository;
+
+  @Autowired
+  OrderRepository orderRepository;
+
+  @Autowired
+  DeliveryRepository deliveryRepository;
+
+  @Autowired
+  OrderProductRepository orderProductRepository;
+
+  @Autowired
+  StorageRepository storageRepository;
+
+  @Autowired
+  CategoryRepository categoryRepository;
+
+  @Autowired
+  SellerRepository sellerRepository;
+
+  public List<User> fixUserData;
+
+  public List<UserAddress> fixUserAddressData;
+
+  public List<Reserve> fixReserveData;
+
+  public List<Order> fixOrderData;
+
+  public List<Delivery> fixDeliveryData;
+
+  public List<OrderProduct> fixOrderProductData;
+
+  public List<Cart> fixCartData;
+
+  public List<CartProduct> fixCartProductData;
+
+  public List<Product> fixProductData;
+
+  public List<SubProduct> fixSubProductData;
+
+  public List<Storage> fixStorageData;
+
+  public List<Category> fixCategoryData;
+
+  public List<Seller> fixSellerData;
 
   @BeforeEach
   public void setUp() {
-    fixUserData = createFixUserData();
-    fixAddressData = createFixAddressData();
-    fixReserveData = createFixReserveData();
+    fixUserData = createUserData();
+    fixUserAddressData = createAddressData();
+    fixReserveData = createReserveData();
+    fixOrderData = createOrderData();
+    fixDeliveryData = createDeliveryData();
+    fixOrderProductData = createOrderProductData();
+    fixCartData = createCartData();
+    fixCartProductData = createCartProductData();
+    fixProductData = createProductData();
+    fixSubProductData = createSubProductData();
+    fixStorageData = createStorageData();
+    fixCategoryData = createCategoryData();
+    fixSellerData = createSellerData();
 
     userRepository.saveAll(fixUserData);
-    userAddressRepository.saveAll(fixAddressData);
+    userAddressRepository.saveAll(fixUserAddressData);
     reserveRepository.saveAll(fixReserveData);
+    orderRepository.saveAll(fixOrderData);
+    deliveryRepository.saveAll(fixDeliveryData);
+    orderProductRepository.saveAll(fixOrderProductData);
+    cartRepository.saveAll(fixCartData);
+    cartProductRepository.saveAll(fixCartProductData);
+    productRepository.saveAll(fixProductData);
+    subProductRepository.saveAll(fixSubProductData);
+    storageRepository.saveAll(fixStorageData);
+    categoryRepository.saveAll(fixCategoryData);
+    sellerRepository.saveAll(fixSellerData);
 
-    assertThat(userRepository.findAll().size()).isEqualTo(3);
+    for (UserAddress userAddress : fixUserAddressData) {
+      int randomValue = (int) (Math.random() * 3);
+      userAddress.setUser(fixUserData.get(randomValue));
+    }
 
+    for (Reserve reserve : fixReserveData) {
+      int randomValue = (int) (Math.random() * 3);
+      reserve.setUser(fixUserData.get(randomValue));
+    }
+
+    for (int i = 0; i < fixOrderData.size(); i++) {
+      int randomValue = (int) (Math.random() * 3);
+      fixOrderData.get(i).setUser(fixUserData.get(randomValue));
+      fixOrderData.get(i).setDelivery(fixDeliveryData.get(i));
+    }
+
+    for (int i = 0; i < fixOrderProductData.size(); i++) {
+      fixOrderProductData.get(i).setOrder(fixOrderData.get(i));
+      fixOrderProductData.get(i).setProduct(fixProductData.get(i));
+    }
+
+    for (Cart cart : fixCartData) {
+      int randomValue = (int) (Math.random() * 3);
+      User user = fixUserData.get(randomValue);
+      cart.setUser(user);
+      cart.setUserCart(user);
+    }
+
+    for (int i = 0; i < fixCartProductData.size(); i++) {
+      fixCartProductData.get(i).setCart(fixCartData.get(i));
+      fixCartProductData.get(i).setProduct(fixProductData.get(i));
+    }
+
+    for (int i = 0; i < fixProductData.size(); i++) {
+      int randomValue = (int) (Math.random() * 10);
+      fixProductData.get(i).setSeller(fixSellerData.get(randomValue));
+      fixProductData.get(i).setStorage(fixStorageData.get(i));
+    }
+
+    for (SubProduct subProduct : fixSubProductData) {
+      int randomValue = (int) (Math.random() * 10);
+      subProduct.setProduct(fixProductData.get(randomValue));
+      subProduct.setCategory(fixCategoryData.get(randomValue));
+    }
+
+    for (Delivery delivery : fixDeliveryData) {
+      List<Order> orders = orderRepository.findAll();
+      List<UserAddress> userAddressList1 = userAddressRepository.findAll();
+      Optional<Order> order1 = orders.stream()
+              .filter(order -> order.getDelivery().equals(delivery))
+              .findFirst();
+
+      order1.ifPresentOrElse(order -> {
+        userAddressList1.stream().filter(userAddress -> userAddress.getUser().equals(order.getUser()))
+                .findFirst().ifPresent(delivery::setAddress);
+      }, () -> {
+        throw new IllegalArgumentException("주문이 없습니다.");
+      });
+    }
+
+    List<UserAddress> userAddressList = userAddressRepository.findAll();
+    userAddressList.forEach(userAddress -> {
+      assertThat(userAddress.getUser()).isNotNull();
+    });
+  }
+
+  @Test
+  @DisplayName("BeforeEach로 만든 데이터 개수 확인")
+  public void checkSetUp() {
+    List<User> userList = userRepository.findAll();
+    List<UserAddress> userAddressList = userAddressRepository.findAll();
+    List<Reserve> reserveList = reserveRepository.findAll();
+    List<Cart> carts = cartRepository.findAll();
+    List<Order> orders = orderRepository.findAll();
+    List<Delivery> deliveries = deliveryRepository.findAll();
+    List<CartProduct> cartProducts = cartProductRepository.findAll();
+    List<OrderProduct> orderProducts = orderProductRepository.findAll();
+    List<Product> products = productRepository.findAll();
+    List<SubProduct> subProducts = subProductRepository.findAll();
+    List<Storage> storages = storageRepository.findAll();
+    List<Category> categories = categoryRepository.findAll();
+
+    assertThat(userList.size()).isEqualTo(3);
+    assertThat(userAddressList.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(reserveList.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(carts.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(orders.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(deliveries.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(cartProducts.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(orderProducts.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(products.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(subProducts.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(storages.size()).isEqualTo(FakeDataFactory.numberOfData);
+    assertThat(categories.size()).isEqualTo(FakeDataFactory.numberOfData);
+
+  }
+
+  @Test
+  @DisplayName("유저 먼저 생성")
+  public void checkUserData() {
     List<User> userList = userRepository.findAll();
     Long userId1 = userList.get(0).getId();
     Long userId2 = userList.get(1).getId();
@@ -79,236 +257,94 @@ class OrderTest {
     assertThat(user1).isNotNull();
     assertThat(user2).isNotNull();
     assertThat(user3).isNotNull();
-
-    userIdList.add(BigInteger.valueOf(userId1));
-    userIdList.add(BigInteger.valueOf(userId2));
-    userIdList.add(BigInteger.valueOf(userId3));
-
-    List<UserAddress> userAddressList = userAddressRepository.findAll();
-    BigInteger userAddressId1 = userAddressList.get(0).getId();
-    BigInteger userAddressId2 = userAddressList.get(1).getId();
-    BigInteger userAddressId3 = userAddressList.get(2).getId();
-
-    UserAddress userAddress1 = userAddressRepository.findById(userAddressId1).orElseThrow(() -> new IllegalArgumentException("userAddress1 유저가 없습니다."));
-    UserAddress userAddress2 = userAddressRepository.findById(userAddressId2).orElseThrow(() -> new IllegalArgumentException("userAddress2 유저가 없습니다."));
-    UserAddress userAddress3 = userAddressRepository.findById(userAddressId3).orElseThrow(() -> new IllegalArgumentException("userAddress3 유저가 없습니다."));
-
-    assertThat(userAddress1).isNotNull();
-    assertThat(userAddress2).isNotNull();
-    assertThat(userAddress3).isNotNull();
-
-    userAddress1.setUser(user1);
-    userAddress2.setUser(user1);
-    userAddress3.setUser(user3);
-
-    userAddressRepository.save(userAddress1);
-    userAddressRepository.save(userAddress2);
-    userAddressRepository.save(userAddress3);
-
-    List<Reserve> reserveList = reserveRepository.findAll();
-    reserveList.get(0).setUser(user1);
-    reserveList.get(1).setUser(user2);
-    reserveList.get(2).setUser(user3);
-
-    List<Reserve> reserveList1 = reserveRepository.saveAll(reserveList);
-
-    Reserve reserve1 = reserveRepository.findById(reserveList1.get(0).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-    Reserve reserve2 = reserveRepository.findById(reserveList1.get(1).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-    Reserve reserve3 = reserveRepository.findById(reserveList1.get(2).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-
-    assertThat(reserve1).isNotNull();
-    assertThat(reserve2).isNotNull();
-    assertThat(reserve3).isNotNull();
-
   }
 
-  @AfterEach
-  public void deleteAllUserData() {
-//    userRepository.deleteAll();
-//    userAddressRepository.deleteAll();
-//    reserveRepository.deleteAll();
+  @Nested
+  @DisplayName("주문 CRUD 테스트(CR은 이미 setup에서 테스트 완료)")
+  public class OrderCRUDTest {
+
+    @Test
+    @DisplayName("주문을 업데이트 할때")
+    void updateOrder() {
+      List<Order> orders = orderRepository.findAll();
+      assertThat(orders.size()).isEqualTo(numberOfData);
+      orders.forEach(order -> {
+        order.setStatus(OrderStatus.COMPLETE);
+        orderRepository.save(order);
+      });
+
+      orderRepository.flush();
+
+      List<Order> updatedOrders = orderRepository.findAll();
+      updatedOrders.forEach(order -> {
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETE);
+      });
+    }
+
+    @Test
+    @DisplayName("주문을 삭제할때")
+    void deleteOrder() {
+      List<Order> orders = orderRepository.findAll();
+      List<OrderProduct> orderProducts = orderProductRepository.findAll();
+      assertThat(orders.size()).isEqualTo(numberOfData);
+      assertThat(orderProducts.size()).isEqualTo(numberOfData);
+
+      orderProducts.stream().filter(orderProduct -> orderProduct.getOrder().equals(orders.get(0)))
+              .forEach(orderProduct -> orderProductRepository.delete(orderProduct));
+
+      Order order1 = orders.get(0);
+      orderRepository.delete(order1);
+
+      List<OrderProduct> afterDeleteOrderProducts = orderProductRepository.findAll();
+      List<Order> afterDeleteOrder = orderRepository.findAll();
+
+      assertThat(afterDeleteOrderProducts.size()).isEqualTo(numberOfData -1);
+      assertThat(afterDeleteOrder.size()).isEqualTo(numberOfData -1);
+    }
   }
 
-  @Test
-  @DisplayName("유저 저장 테스트")
-  void save() {
-    //when
-//    userRepository.saveAll(fixUserData);
-    //then
-    assertThat(userRepository.findAll().size()).isEqualTo(3);
-  }
-//
-  @Test
-  @DisplayName("유저 데이터 읽기")
-//  @Rollback(value = false)
-  void readUser() {
+  @Nested
+  @DisplayName("배송 CRUD 테스트(CR은 이미 setup에서 테스트 완료)")
+  public class DeliveryCRUDTest {
+    @Test
+    @DisplayName("배송을 업데이트 할때")
+    void updateDelivery() {
+      List<Delivery> deliveries = deliveryRepository.findAll();
+      assertThat(deliveries.size()).isEqualTo(numberOfData);
+      deliveries.forEach(delivery -> {
+        delivery.setStatus(DeliveryStatus.COMPLETE);
+        deliveryRepository.save(delivery);
+      });
 
-    //when
-    User user1 = userRepository.findById(userIdList.get(0)).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-    User user2 = userRepository.findById(userIdList.get(1)).orElseThrow(() -> new IllegalArgumentException("user2 유저가 없습니다."));
-    User user3 = userRepository.findById(userIdList.get(2)).orElseThrow(() -> new IllegalArgumentException("user3 유저가 없습니다."));
+      List<Delivery> updatedDeliveries = deliveryRepository.findAll();
+      updatedDeliveries.forEach(delivery -> {
+        assertThat(delivery.getStatus()).isEqualTo(DeliveryStatus.COMPLETE);
+      });
+    }
 
-    assertThat(user1.getEmail()).isEqualTo("test1@test.com");
-    assertThat(user1.getGrade()).isEqualTo(BRONZE);
-    assertThat(user1.getBirthday()).isEqualTo("1991-01-01");
-    assertThat(user1.getRole()).isEqualTo(USER);
-    assertThat(user1.getStatus()).isEqualTo(ACTIVE);
-    assertThat(user1.getMobileNumber()).isEqualTo("010-1111-1111");
-    assertThat(user1.getNickname()).isEqualTo("testUser1");
+    @Test
+    @DisplayName("배송을 삭제할때")
+    void deleteDelivery() {
+      List<Delivery> deliveries = deliveryRepository.findAll();
+      List<OrderProduct> orderProducts = orderProductRepository.findAll();
+      List<Order> orders = orderRepository.findAll();
+      assertThat(deliveries.size()).isEqualTo(numberOfData);
+      assertThat(orders.size()).isEqualTo(numberOfData);
 
+      orderProducts.stream().filter(orderProduct -> orderProduct.getOrder().getDelivery().equals(deliveries.get(0)))
+              .forEach(orderProduct -> orderProductRepository.delete(orderProduct));
 
-    assertThat(user2.getEmail()).isEqualTo("test2@test.com");
-    assertThat(user2.getGrade()).isEqualTo(SILVER);
-    assertThat(user2.getBirthday()).isEqualTo("1992-01-01");
-    assertThat(user2.getRole()).isEqualTo(ADMIN);
-    assertThat(user2.getStatus()).isEqualTo(INACTIVE);
-    assertThat(user2.getMobileNumber()).isEqualTo("010-2222-2222");
-    assertThat(user2.getNickname()).isEqualTo("testUser2");
-    assertThat(user2.getPassword()).isEqualTo("testpassword2");
+      orders.stream().filter(order -> order.getDelivery().equals(deliveries.get(0)))
+              .forEach(order -> orderRepository.delete(order));
 
+      List<Order> afterDeleteOrders = orderRepository.findAll();
+      List<Delivery> afterDeleteDeliveries = deliveryRepository.findAll();
 
-    assertThat(user3.getEmail()).isEqualTo("test3@test.com");
-    assertThat(user3.getGrade()).isEqualTo(GOLD);
-    assertThat(user3.getBirthday()).isEqualTo("1993-01-01");
-    assertThat(user3.getRole()).isEqualTo(USER);
-    assertThat(user3.getStatus()).isEqualTo(ACTIVE);
-    assertThat(user3.getMobileNumber()).isEqualTo("010-3333-3333");
-    assertThat(user3.getNickname()).isEqualTo("testUser3");
-    assertThat(user3.getPassword()).isEqualTo("testpassword3");
+      assertThat(afterDeleteOrders.size()).isEqualTo(numberOfData -1);
+      assertThat(afterDeleteDeliveries.size()).isEqualTo(numberOfData -1);
 
-  }
-
-  @Test
-  @DisplayName("유저 업데이트")
-//  @Rollback(value = false)
-  void updateUser() {
-    User user1 = userRepository.findById(userIdList.get(0)).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-
-    user1.setNickname("testUser1Updated");
-    user1.setGrade(GOLD);
-    user1.setBirthday(LocalDate.parse("1991-02-01"));
-    user1.setRole(ADMIN);
-    user1.setStatus(INACTIVE);
-    user1.setMobileNumber("010-4444-4444");
-    user1.setPassword("testpassword1Updated");
-
-    userRepository.save(user1);
-
-    User updateUser = userRepository.findById(BigInteger.valueOf(user1.getId())).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-
-    assertThat(updateUser.getEmail()).isEqualTo("test1@test.com");
-    assertThat(updateUser.getGrade()).isEqualTo(GOLD);
-    assertThat(updateUser.getBirthday()).isEqualTo("1991-02-01");
-    assertThat(updateUser.getRole()).isEqualTo(ADMIN);
-    assertThat(updateUser.getStatus()).isEqualTo(INACTIVE);
-    assertThat(updateUser.getMobileNumber()).isEqualTo("010-4444-4444");
-    assertThat(updateUser.getNickname()).isEqualTo("testUser1Updated");
-    assertThat(updateUser.getPassword()).isEqualTo("testpassword1Updated");
-
-  }
-
-  @Test
-  @DisplayName("유저 삭제")
-//  @Rollback(value = false)
-  void deleteUser() {
-    userRepository.deleteById(userIdList.get(0));
-    Optional<User> user1 = userRepository.findById(userIdList.get(0));
-    assertThat(user1.isEmpty()).isTrue();
-  }
-
-  @Test
-  @DisplayName("유저 주소 저장")
-  @Transactional
-  void saveUserAddress() {
-    assertThat(userAddressRepository.findAll().size()).isEqualTo(3);
-    assertThat(userAddressRepository.findAll().get(0).getUser()).isSameAs(userRepository.findAll().get(0));
-  }
-
-  @Test
-  @DisplayName("유저 주소 읽기")
-  @Transactional
-  void readUserAddress() {
-    User user1 = userRepository.findById(userIdList.get(0)).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-
-    UserAddress userAddress1 = userAddressRepository.findUserAddressByUserId(user1.getId()).get(0);
-    assertThat(userAddress1).isSameAs(fixAddressData.get(0));
-    assertThat(userAddress1.getAddress()).isEqualTo("서울시 강남구");
-    assertThat(userAddress1.getAddressDetail()).isEqualTo("역삼동 111-1");
-    assertThat(userAddress1.getZipCode()).isEqualTo("11111");
-
-    UserAddress userAddress2 = userAddressRepository.findUserAddressByUserId(user1.getId()).get(1);
-    assertThat(userAddress2).isSameAs(fixAddressData.get(1));
-    assertThat(userAddress2.getAddress()).isEqualTo("서울시 강남구");
-    assertThat(userAddress2.getAddressDetail()).isEqualTo("역삼동 222-2");
-    assertThat(userAddress2.getZipCode()).isEqualTo("22222");
-  }
-
-  @Test
-  @DisplayName("유저 주소 업데이트")
-  @Transactional
-  void updateUserAddress() {
-    User user1 = userRepository.findById(userIdList.get(0)).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-
-    UserAddress userAddress1 = userAddressRepository.findUserAddressByUserId(user1.getId()).get(0);
-    userAddress1.setAddress("서울시 테스트구");
-    userAddress1.setAddressDetail("테스트동 111-1");
-    userAddress1.setZipCode("00000");
-
-    userAddressRepository.save(userAddress1);
-    userAddressRepository.flush();
-
-    UserAddress updateUserAddress = userAddressRepository.findUserAddressByUserId(user1.getId()).get(0);
-    assertThat(updateUserAddress.getAddress()).isEqualTo("서울시 테스트구");
-    assertThat(updateUserAddress.getAddressDetail()).isEqualTo("테스트동 111-1");
-    assertThat(updateUserAddress.getZipCode()).isEqualTo("00000");
-  }
-
-  @Test
-  @DisplayName("유저 주소 삭제")
-  @Transactional
-  void deleteUserAddress() {
-    User user1 = userRepository.findById(userIdList.get(0)).orElseThrow(() -> new IllegalArgumentException("user1 유저가 없습니다."));
-
-    UserAddress userAddress1 = userAddressRepository.findUserAddressByUserId(user1.getId()).get(0);
-    UserAddress userAddress2 = userAddressRepository.findUserAddressByUserId(user1.getId()).get(1);
-    userAddressRepository.delete(userAddress1);
-    userAddressRepository.delete(userAddress2);
-    userAddressRepository.flush();
-
-    assertThat(userAddressRepository.findUserAddressByUserId(user1.getId()).isEmpty()).isTrue();
-  }
-
-  @Test
-  @DisplayName("예약 읽기")
-  @Transactional
-  void readReserve() {
-    Reserve reserve = reserveRepository.findById(fixReserveData.get(0).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-    assertThat(reserve.getAmount()).isEqualTo(BigDecimal.valueOf(10000));
-    assertThat(reserve.isValid()).isTrue();
-    assertThat(reserve.getUser()).isSameAs(fixUserData.get(0));
-  }
-
-  @Test
-  @DisplayName("예약 업데이트")
-  @Transactional
-  void updateReserve() {
-    Reserve reserve = reserveRepository.findById(fixReserveData.get(0).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-    reserve.setAmount(BigDecimal.valueOf(20000));
-    reserve.setValid(false);
-
-    reserveRepository.save(reserve);
-    reserveRepository.flush();
-
-    Reserve updateReserve = reserveRepository.findById(fixReserveData.get(0).getId()).orElseThrow(() -> new IllegalArgumentException("reserve가 없습니다."));
-    assertThat(updateReserve.getAmount()).isEqualTo(BigDecimal.valueOf(20000));
-    assertThat(updateReserve.isValid()).isFalse();
-  }
-
-  @Test
-  @DisplayName("예약 삭제")
-  void deleteReserve() {
-    reserveRepository.deleteById(fixReserveData.get(0).getId());
-    Optional<Reserve> reserve = reserveRepository.findById(fixReserveData.get(0).getId());
-    assertThat(reserve.isEmpty()).isTrue();
+      assertThatThrownBy(() -> deliveryRepository.findById(deliveries.get(0).getId()).orElseThrow(() -> new IllegalArgumentException("배송이 없습니다.")))
+              .isInstanceOf(IllegalArgumentException.class);
+    }
   }
 }
