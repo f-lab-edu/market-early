@@ -38,9 +38,5 @@ public class OrderProduct extends BaseTimeEntity {
     this.product = product;
     this.quantity = quantity;
     this.productPrice = productPrice;
-
-//    if(order == null && product == null) {
-//      throw new IllegalArgumentException("주문과 상품 둘중 하나가 필요합니다.");
-//    }
   }
 }

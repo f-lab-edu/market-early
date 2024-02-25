@@ -54,7 +54,7 @@ public class User extends BaseTimeEntity {
   //추후에 PasswordEncoder를 사용하여 암호화
   public String password;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private Cart cart;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
