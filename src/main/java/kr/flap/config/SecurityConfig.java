@@ -22,13 +22,8 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
     http.authorizeHttpRequests((auth) -> auth
-            .requestMatchers("/", "/login", "/loginProc", "/join", "joinProc").permitAll()
-            .requestMatchers("/my/**").hasAnyRole( "USER")
+            .requestMatchers("/v1/user/join", "/v1/user/login", "/v1/user/loginProc", "/v1/user/joinProc").permitAll()
             .anyRequest().authenticated()
-    );
-    http.formLogin((auth) -> auth.loginPage("/login")
-            .loginProcessingUrl("/loginProc")
-            .permitAll()
     );
     http.csrf((auth) -> auth.disable());
     return http.build();
