@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
-@Slf4j
 public class UserLoginService {
 
   @Autowired
@@ -23,12 +23,19 @@ public class UserLoginService {
   private BCryptPasswordEncoder bCryptPasswordEncoder;
 
   public Optional<User> userLoginProcess(UserLoginDTO userLoginDTO) {
-    String encodedPassword = bCryptPasswordEncoder.encode(userLoginDTO.getPassword());
+    Optional<User> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
 
-    Optional<User> loginUser = userRepository.findByEmailAndPassword(userLoginDTO.getEmail(), encodedPassword);
+    if (userOptional.isPresent()) {
+      User user = userOptional.get();
+      if (bCryptPasswordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+        return userOptional;
+      } else {
+        log.info("[user-login-thread] kr.flap.domain.model.user.controller : 사용자 [{}] 로그인 실패", userLoginDTO.getEmail());
+      }
+    } else {
+      log.info("[user-login-thread] kr.flap.domain.model.user.controller : 사용자 [{}] 로그인 실패", userLoginDTO.getEmail());
+    }
 
-    loginUser.ifPresentOrElse(user -> log.info("로그인 성공"), () -> log.info("로그인 실패"));
-
-    return loginUser;
+    return Optional.empty();
   }
 }

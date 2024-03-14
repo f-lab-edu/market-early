@@ -1,2 +1,14 @@
-package kr.flap.domain.model.user.controller.response;public class UserJoinResponse {
+package kr.flap.domain.model.user.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class UserJoinResponseDTO {
+
+  private Long id;
+  private String username;
 }

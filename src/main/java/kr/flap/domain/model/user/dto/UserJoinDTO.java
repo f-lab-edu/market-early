@@ -3,14 +3,14 @@ package kr.flap.domain.model.user.dto;
 import jakarta.validation.constraints.*;
 import kr.flap.domain.model.user.UserAddress;
 import kr.flap.domain.model.user.enums.UserGender;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class UserJoinDTO {
 
@@ -23,9 +23,7 @@ public class UserJoinDTO {
   private String nickname;
 
   @NotBlank(message = "비밀번호를 입력해야합니다.")
-  @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 16자 이하로 입력해주세요.")
-  @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,16}$",
-          message = "비밀번호는 영문 대/소문자, 숫자, 특수문자를 포함해야 합니다.")
+  @Size(min = 8, max = 16, message = "비밀번호는 8자 이상 16자 이하로 입력해주세요.")
   private String password;
 
   @Email(message = "이메일 형식을 맞춰주세요.")
@@ -40,4 +38,16 @@ public class UserJoinDTO {
   private UserGender gender;
 
   private UserAddress userAddress;
+
+  @Builder
+  public UserJoinDTO(String username, String nickname, String password, String email, String mobileNumber, LocalDate birthday, UserGender gender, UserAddress userAddress) {
+    this.username = username;
+    this.nickname = nickname;
+    this.password = password;
+    this.email = email;
+    this.mobileNumber = mobileNumber;
+    this.birthday = birthday;
+    this.gender = gender;
+    this.userAddress = userAddress;
+  }
 }

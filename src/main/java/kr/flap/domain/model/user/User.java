@@ -2,12 +2,10 @@ package kr.flap.domain.model.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import kr.flap.domain.model.cart.Cart;
+import kr.flap.domain.model.common.BaseTimeEntity;
 import kr.flap.domain.model.order.Order;
 import kr.flap.domain.model.reserve.Reserve;
-import kr.flap.domain.model.common.BaseTimeEntity;
 import kr.flap.domain.model.user.enums.UserGender;
 import kr.flap.domain.model.user.enums.UserGrade;
 import kr.flap.domain.model.user.enums.UserRole;
@@ -15,8 +13,6 @@ import kr.flap.domain.model.user.enums.UserStatus;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -64,9 +60,6 @@ public class User extends BaseTimeEntity {
   private UserGender gender;
 
   @Column(nullable = false)
-  @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 16자 이하로 입력해주세요.")
-  @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,16}$",
-          message = "비밀번호는 영문 대/소문자, 숫자, 특수문자를 포함해야 합니다.")
   private String password;
 
   @OneToOne(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -81,22 +74,14 @@ public class User extends BaseTimeEntity {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Order> orderList = new ArrayList<>();
 
-  @Override
-  public void onPrePersist(){
-    super.onPrePersist();
-    if(this.password !=null) {
-//      password = passwordEncoder().encode(password);
-    }
-  }
-
   @Builder
   public User(String username, String nickname, UserStatus status, UserRole role,
               UserGrade grade, String email, String mobileNumber, LocalDate birthday, String password, UserGender gender) {
     this.username = username;
     this.nickname = nickname;
-    this.status = status;
-    this.role = role;
-    this.grade = grade;
+    this.status = status != null ? status : UserStatus.ACTIVE;
+    this.role = role != null ? role : UserRole.USER;
+    this.grade = grade != null ? grade : UserGrade.BRONZE;
     this.email = email;
     this.mobileNumber = mobileNumber;
     this.birthday = birthday;
