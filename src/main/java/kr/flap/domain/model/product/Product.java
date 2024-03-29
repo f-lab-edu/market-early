@@ -21,7 +21,7 @@ public class Product extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "storage_id")
   public Storage storage;
 

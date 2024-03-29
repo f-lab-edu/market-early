@@ -1,0 +1,16 @@
+INSERT INTO products (id,
+                      seller_id,
+                      storage_id,
+                      short_description,
+                      expiration_date,
+                      main_image_url,
+                      created_date,
+                      updated_date)
+VALUES (2,
+        2,
+        2,
+        '마늘의 감칠맛이 듬뿍',
+        '2024-09-15',
+        'https://product-image.kurly.com/product/image/6a2a0cb8-dab5-4227-a8a9-880e0739fb55.jpg',
+        '2024-03-28 22:46:00',
+        '2024-03-28 22:46:00');

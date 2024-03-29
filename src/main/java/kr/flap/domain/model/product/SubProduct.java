@@ -16,7 +16,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Entity
-@Table(name = "sub_product")
+@Table(name = "sub_products")
 public class SubProduct extends BaseTimeEntity {
 
   @Id
