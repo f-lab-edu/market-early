@@ -38,3 +38,5 @@ out/
 
 ### macOS ###
 .DS_Store
+
+src/test/java/kr/flap/curlybackend/Solution.java
