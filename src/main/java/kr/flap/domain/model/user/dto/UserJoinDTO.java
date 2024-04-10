@@ -3,15 +3,14 @@ package kr.flap.domain.model.user.dto;
 import jakarta.validation.constraints.*;
 import kr.flap.domain.model.user.UserAddress;
 import kr.flap.domain.model.user.enums.UserGender;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 
 @NoArgsConstructor
 @Data
+@ToString(exclude = "password")
 public class UserJoinDTO {
 
   @NotBlank(message = "아이디를 입력해주세요.")
@@ -26,6 +25,7 @@ public class UserJoinDTO {
   @Size(min = 8, max = 16, message = "비밀번호는 8자 이상 16자 이하로 입력해주세요.")
   private String password;
 
+  @NotBlank(message = "이메일을 입력해주세요.")
   @Email(message = "이메일 형식을 맞춰주세요.")
   private String email;
 
