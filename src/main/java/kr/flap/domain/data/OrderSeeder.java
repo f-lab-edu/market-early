@@ -1,18 +1,13 @@
 package kr.flap.domain.data;
 
-import kr.flap.domain.model.order.Delivery;
-import kr.flap.domain.model.order.DeliveryRepository;
 import kr.flap.domain.model.order.Order;
 import kr.flap.domain.model.order.OrderRepository;
-import kr.flap.domain.model.user.User;
-import kr.flap.domain.model.user.UserRepository;
+import kr.flap.domain.model.order.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 @Service
@@ -21,23 +16,34 @@ import java.util.stream.IntStream;
 public class OrderSeeder {
 
   private final OrderRepository orderRepository;
-  private final DeliverySeeder deliverySeeder;
-  private final UserRepository userRepository;
 
-  public void seed() {
-    List<Object> orderList = IntStream.range(1, 101)
+  public List<Order> seed() {
+    List<Order> orderList = IntStream.range(1, 3001)
             .mapToObj(this::createOrder)
             .toList();
+
+    return orderRepository.saveAll(orderList);
   }
 
-  private Object createOrder(int i) {
-    Delivery delivery = deliverySeeder.seed();
-    userRepository.findById(BigInteger.valueOf(i)).ifPresent(user -> {
-      Order.builder()
-              .delivery(delivery)
-              .user(user)
-              .build();
-    });
-    return null;
+  private Order createOrder(int i) {
+    return Order.builder()
+            .status(OrderStatus.CANTORDER)
+            .build();
+  }
+
+  public void setOrderList(List<Order> orderList) {
+    orderRepository.saveAll(orderList);
+  }
+
+  public List<Order> getOrderList() {
+    return orderRepository.findAll();
+  }
+
+  public boolean isDataAlreadySeeded() {
+    return orderRepository.count() > 0;
+  }
+
+  public void setOrder(Order order) {
+    orderRepository.save(order);
   }
 }

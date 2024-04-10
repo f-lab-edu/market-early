@@ -2,8 +2,6 @@ package kr.flap.domain.data;
 
 import kr.flap.domain.model.product.Product;
 import kr.flap.domain.model.product.ProductRepository;
-import kr.flap.domain.model.product.Seller;
-import kr.flap.domain.model.product.Storage;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,29 +16,29 @@ import java.util.stream.IntStream;
 public class ProductSeeder {
 
   private final ProductRepository productRepository;
-  private final StorageSeeder storageSeeder;
-  private final SellerSeeder sellerSeeder;
-
-  public static int maxProducts;
 
   public void seed() {
-    List<Product> productList = IntStream.range(1, maxProducts)
+    List<Product> productList = IntStream.range(1, 9001)
             .mapToObj(this::createProduct)
             .toList();
 
     productRepository.saveAll(productList);
   }
 
-  public List<Product> getProducts() {
+  public void setProduct(Product product) {
+    productRepository.save(product);
+  }
+
+  public List<Product> getProductList() {
     return productRepository.findAll();
   }
 
+  public boolean isDataAlreadySeeded() {
+    return productRepository.count() > 0;
+  }
+
   private Product createProduct(int i) {
-    Storage storage = storageSeeder.seed();
-    Seller seller = sellerSeeder.seed();
     return Product.builder()
-            .storage(storage)
-            .seller(seller)
             .shortDescription("Product" + i)
             .expirationDate(LocalDate.of(2999, 12, 31))
             .mainImageUrl("https://www.google.com" + i)

@@ -2,249 +2,244 @@ package kr.flap.domain.data;
 
 import kr.flap.domain.model.cart.Cart;
 import kr.flap.domain.model.cart.CartProduct;
-import kr.flap.domain.model.cart.CartProductRepository;
-import kr.flap.domain.model.cart.CartRepository;
-import kr.flap.domain.model.order.*;
-import kr.flap.domain.model.order.enums.DeliveryStatus;
-import kr.flap.domain.model.order.enums.OrderStatus;
+import kr.flap.domain.model.order.Delivery;
+import kr.flap.domain.model.order.Order;
+import kr.flap.domain.model.order.OrderProduct;
 import kr.flap.domain.model.product.*;
-import kr.flap.domain.model.product.enums.StorageType;
 import kr.flap.domain.model.reserve.Reserve;
-import kr.flap.domain.model.reserve.ReserveRepository;
 import kr.flap.domain.model.user.User;
 import kr.flap.domain.model.user.UserAddress;
-import kr.flap.domain.model.user.UserAddressRepository;
-import kr.flap.domain.model.user.UserRepository;
-import kr.flap.domain.model.user.enums.UserGender;
-import kr.flap.domain.model.user.enums.UserGrade;
-import kr.flap.domain.model.user.enums.UserRole;
-import kr.flap.domain.model.user.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
 @Transactional
 public class DatabaseSeederService {
-
-  private final CartRepository cartRepository;
-  private final CartProductRepository cartProductRepository;
-  private final UserRepository userRepository;
-  private final ReserveRepository reserveRepository;
-  private final ProductRepository productRepository;
-  private final SellerRepository sellerRepository;
-  private final StorageRepository storageRepository;
-  private final SubProductRepository subProductRepository;
-  private final CategoryRepository categoryRepository;
-  private final UserAddressRepository UserAddressRepository;
-  private final DeliveryRepository deliveryRepository;
-  private final OrderRepository orderRepository;
-  private final OrderProductRepository orderProductRepository;
-
-
-  static int maxReservesPerUser = 10;
-
-  public boolean isDataAlreadySeeded() {
-    return userRepository.count() > 0;
-  }
-
+  private final UserSeeder userSeeder;
+  private final UserAddressSeeder userAddressSeeder;
+  private final CartSeeder cartSeeder;
+  private final ReserveSeeder reserveSeeder;
+  private final OrderSeeder orderSeeder;
+  private final DeliverySeeder deliverySeeder;
+  private final ProductSeeder productSeeder;
+  private final OrderProductSeeder orderProductSeeder;
+  private final CartProductSeeder cartProductSeeder;
+  private final SellerSeeder sellerSeeder;
+  private final StorageSeeder storageSeeder;
+  private final SubProductSeeder subProductSeeder;
+  private final CategorySeeder categorySeeder;
 
   public void seedDatabase() {
+    if(!userSeeder.isDataAlreadySeeded()) {
+      userSeeder.seed();
+    }
 
-    createCarts();
+    if(!userAddressSeeder.isDataAlreadySeeded()) {
+      userAddressSeeder.seed();
+    }
 
-    createProduct();
+    if(!cartSeeder.isDataAlreadySeeded()) {
+      cartSeeder.seed();
+    }
 
-    createCardProduct();
+    if(!reserveSeeder.isDataAlreadySeeded()) {
+      reserveSeeder.seed();
+    }
 
-    seedReservesForAllUsers(maxReservesPerUser);
+    if (!orderSeeder.isDataAlreadySeeded()) {
+      orderSeeder.seed();
+    }
 
-    createSeller();
+    if(!deliverySeeder.isDataAlreadySeeded()) {
+      deliverySeeder.seed();
+    }
 
-    createStorage();
+    if(!productSeeder.isDataAlreadySeeded()) {
+      productSeeder.seed();
+    }
 
-    createSubProduct();
+    if(!sellerSeeder.isDataAlreadySeeded()) {
+      sellerSeeder.seed();
+    }
 
-    createCategory();
+    if(!storageSeeder.isDataAlreadySeeded()) {
+      storageSeeder.seed();
+    }
 
-    createAddresses();
-    createDeliveries();
-    createOrders();
-    createOrderProducts();
-  }
+    if(!subProductSeeder.isDataAlreadySeeded()) {
+      subProductSeeder.seed();
+    }
 
-  private void createCategory() {
-    for (int i = 1; i < 11; i++) {
-      Category category = Category.builder()
-              .name("카테고리" + i)
-              .build();
-      categoryRepository.save(category);
+    if(!categorySeeder.isDataAlreadySeeded()) {
+      categorySeeder.seed();
     }
   }
 
-  private void createSubProduct() {
-    for (int i = 1; i < 11; i++) {
-      productRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("Product not found"));
-      SubProduct subProduct = SubProduct.builder()
-              .name("상품" + i)
-              .brand("브랜드" + i)
-              .tag(Map.of("key" + i, "value" + i))
-              .basePrice(BigDecimal.valueOf(i * 100))
-              .retailPrice(BigDecimal.valueOf(1000 * i))
-              .discountRate(i)
-              .discountPrice(BigDecimal.valueOf(100 * i))
-              .restock(i)
-              .canRestockNotify(true)
-              .minQuantity(i)
-              .maxQuantity(2 * i)
-              .isSoldOut(false)
-              .isPurchaseStatus(true)
-              .build();
-      subProductRepository.save(subProduct);
+  public boolean isDataAlreadySeeded() {
+    return userSeeder.isDataAlreadySeeded() &&
+            userAddressSeeder.isDataAlreadySeeded() &&
+            cartSeeder.isDataAlreadySeeded() &&
+            reserveSeeder.isDataAlreadySeeded() &&
+            orderSeeder.isDataAlreadySeeded() &&
+            deliverySeeder.isDataAlreadySeeded() &&
+            productSeeder.isDataAlreadySeeded() &&
+            sellerSeeder.isDataAlreadySeeded() &&
+            storageSeeder.isDataAlreadySeeded() &&
+            subProductSeeder.isDataAlreadySeeded() &&
+            categorySeeder.isDataAlreadySeeded();
+  }
+  public void connectEntitiesToEntities() {
+    connectUserToUserAddress();
+    connectUserToCart();
+    connectUserToReserve();
+    connectUserToOrder();
+    connectOrderToProduct();
+    connectOrderToDelivery();
+    connectProductToCart();
+    connectProductToSeller();
+    connectProductToStorage();
+    connectToSubProductToProduct();
+    connectToSubProductToCategory();
+  }
+
+  private void connectOrderToDelivery() {
+    List<Order> orderList = orderSeeder.getOrderList();
+    List<Delivery> deliveryList = deliverySeeder.getDeliveryList();
+    for (int i = 0; i < orderList.size(); i++) {
+      Order order = orderList.get(i);
+      Delivery delivery = deliveryList.get(i);
+      order.setDelivery(delivery);
+      orderSeeder.setOrder(order);
     }
   }
 
-  private void createStorage() {
-    for (int i = 1; i < 11; i++) {
-      Storage storage = Storage.builder()
-              .type(StorageType.values()[i % StorageType.values().length])
-              .build();
-      storageRepository.save(storage);
+  private void connectToSubProductToCategory() {
+    List<SubProduct> subProductList = subProductSeeder.getSubProductList();
+    List<Category> categoryList = categorySeeder.getCategoryList();
+
+    Random random = new Random();
+
+    for (SubProduct subProduct : subProductList) {
+      int randomIndex = random.nextInt(categoryList.size());
+      Category randomCategory = categoryList.get(randomIndex);
+      subProduct.setCategory(randomCategory);
+      subProductSeeder.setSubProduct(subProduct);
     }
   }
 
-  private void createSeller() {
-    for (int i = 1; i < 11; i++) {
-      Seller seller = Seller.builder()
-              .name("판매자" + i)
-              .build();
-      sellerRepository.save(seller);
+  private void connectToSubProductToProduct() {
+    List<Product> productList = productSeeder.getProductList();
+    List<SubProduct> subProductList = subProductSeeder.getSubProductList();
+    for (int i = 0; i < productList.size(); i++) {
+      Product product = productList.get(i);
+      List<SubProduct> setSubProductList = subProductList.subList(i * 2, (i + 1) * 2).stream().peek(subProduct -> subProduct.setProduct(product)).toList();
+      subProductSeeder.setSubProductList(setSubProductList);
     }
   }
 
-  private void createProduct() {
-    for (int i = 1; i < 11; i++) {
-      Product product = Product.builder()
-              .shortDescription("한글 설명" + i)
-              .expirationDate(LocalDate.of(2999, 12, 31))
-              .mainImageUrl("https://www.google.com" + i)
-              .build();
-      productRepository.save(product);
+  private void connectProductToStorage() {
+    List<Product> productList = productSeeder.getProductList();
+    List<Storage> storageList = storageSeeder.getStorageList();
+    for (int i = 0; i < productList.size(); i++) {
+      Product product = productList.get(i);
+      Storage storage = storageList.get(i);
+      product.setStorage(storage);
+      productSeeder.setProduct(product);
     }
   }
 
-  private void createReserve() {
-    for (int i = 1; i < 11; i++) {
-        User user = userRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("User not found"));
-      for (int j = 1; j < 11; j++) {
-        Reserve reserve = Reserve.builder()
-                .isValid(true)
-                .user(user)
-                .amount(BigDecimal.valueOf(j * 100))
-                .build();
-        reserveRepository.save(reserve);
-      }
+  private void connectProductToSeller() {
+    List<Product> productList = productSeeder.getProductList();
+    List<Seller> sellerList = sellerSeeder.getSellerList();
+    for (int i = 0; i < productList.size(); i++) {
+      Product product = productList.get(i);
+      Seller seller = sellerList.get(i);
+      product.setSeller(seller);
+      productSeeder.setProduct(product);
     }
   }
 
-  private void createCardProduct() {
-    for (int i = 1; i < 11; i++) {
-      Cart cart = cartRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("Cart not found"));
-      Product product = productRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("Product not found"));
-      CartProduct cartProduct = CartProduct.builder()
+  private void connectProductToCart() {
+    List<Product> productList = productSeeder.getProductList();
+    List<Cart> cartList = cartSeeder.getCartList();
+    for (int i = 0; i < cartList.size(); i++) {
+      Cart cart = cartList.get(i);
+      List<Product> productsForCart = productList.subList(i * 3, (i + 1) * 3);
+      List<CartProduct> cartProducts = productsForCart.stream().map(product -> CartProduct.builder()
               .cart(cart)
               .product(product)
-              .quantity(i)
-              .productPrice(BigDecimal.valueOf(i * 100))
-              .build();
-      cartProductRepository.save(cartProduct);
+              .quantity(1)
+              .productPrice(BigDecimal.valueOf(100))
+              .build()).toList();
+      cartProductSeeder.setCartProductList(cartProducts);
     }
   }
 
-  private void createCarts() {
-    for (int i = 1; i < 11; i++) {
-      User user = userRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("User not found"));
-      Cart cart = Cart.builder()
-              .user(user)
-              .build();
-      cartRepository.save(cart);
-    }
-  }
-
-
-  private void createAddresses() {
-    for (int i = 1; i <= 10; i++) {
-      UserAddress address = UserAddress.builder()
-              .address("주소" + i)
-              .addressDetail("상세주소" + i)
-              .zipCode("12345" + i)
-              .build();
-      UserAddressRepository.save(address);
-    }
-  }
-
-  private void createDeliveries() {
-    for (int i = 1; i <= 10; i++) {
-      Delivery delivery = Delivery.builder()
-              .status(DeliveryStatus.READY)
-              .build();
-      deliveryRepository.save(delivery);
-    }
-  }
-
-  private void createOrders() {
-    for (int i = 1; i <= 10; i++) {
-      User user = userRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("User not found"));
-      Order order = Order.builder()
-              .user(user)
-              .status(OrderStatus.COMPLETE)
-              .build();
-      orderRepository.save(order);
-    }
-  }
-
-  private void createOrderProducts() {
-    for (int i = 1; i <= 10; i++) {
-      Order order = orderRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("Order not found"));
-      Product product = productRepository.findById(BigInteger.valueOf(i)).orElseThrow(() -> new RuntimeException("Product not found"));
-      OrderProduct orderProduct = OrderProduct.builder()
+  private void connectOrderToProduct() {
+    List<Order> orderList = orderSeeder.getOrderList();
+    List<Product> productList = productSeeder.getProductList();
+    for (int i = 0; i < orderList.size(); i++) {
+      Order order = orderList.get(i);
+      List<Product> productsForOrder = productList.subList(i * 3, (i + 1) * 3);
+      int quantity = i;
+      List<OrderProduct> orderProducts = productsForOrder.stream().map(product -> OrderProduct.builder()
               .order(order)
               .product(product)
-              .quantity(i)
-              .build();
-      orderProductRepository.save(orderProduct);
+              .quantity(quantity)
+              .build()).toList();
+      orderProductSeeder.setOrderProductList(orderProducts);
     }
   }
 
-  private void seedReservesForAllUsers(int maxReservesPerUser) {
-    IntStream.rangeClosed(1, maxReservesPerUser)
-            .mapToObj(this::findUserById)
-            .forEach(this::createAndSaveReservesForUser);
+  private void connectUserToOrder() {
+    List<User> userList = userSeeder.getUserList();
+    List<Order> orderList = orderSeeder.getOrderList();
+    for (int i = 0; i < userList.size(); i++) {
+      User user = userList.get(i);
+      List<Order> userForOrder = orderList.subList(i * 3, (i + 1) * 3);
+      List<Order> setOrderToUserList = userForOrder.stream().peek(order -> order.setUser(user)).toList();
+      orderSeeder.setOrderList(setOrderToUserList);
+    }
   }
 
-  private User findUserById(int id) {
-    return userRepository.findById(BigInteger.valueOf(id))
-            .orElseThrow(() -> new RuntimeException("User not found"));
+  private void connectUserToReserve() {
+    List<User> userList = userSeeder.getUserList();
+    List<Reserve> reserveList = reserveSeeder.getReserveList();
+    for (int i = 0; i < userList.size(); i++) {
+      User user = userList.get(i);
+      List<Reserve> reservesForUser = reserveList.subList(i * 5, (i + 1) * 5);
+      List<Reserve> saveReserveSetUserList = reservesForUser.stream().peek(reserve -> reserve.setUser(user)).toList();
+      reserveSeeder.setReserveList(saveReserveSetUserList);
+    }
   }
 
-  private void createAndSaveReservesForUser(User user) {
-    IntStream.rangeClosed(1, maxReservesPerUser)
-            .mapToObj(i -> createReserve(user, i))
-            .forEach(reserveRepository::save);
+  private void connectUserToCart() {
+    List<User> userList = userSeeder.getUserList();
+    List<Cart> cartList = cartSeeder.getCartList();
+
+    for (int i = 0; i < userList.size(); i++) {
+      User user = userList.get(i);
+      Cart cart = cartList.get(i);
+      cart.setUser(user);
+      cartSeeder.setCartConnectedUser(cart);
+    }
   }
 
-  private Reserve createReserve(User user, int multiplier) {
-    return Reserve.builder()
-            .isValid(true)
-            .user(user)
-            .amount(BigDecimal.valueOf(multiplier * 100))
-            .build();
+  private void connectUserToUserAddress() {
+    List<User> userList = userSeeder.getUserList();
+    List<UserAddress> userAddresseList = userAddressSeeder.getUserAddresses();
+    for (int i = 0; i < userList.size(); i++) {
+      User user = userList.get(i);
+      List<UserAddress> addressesConnectToUser = userAddresseList.subList(i * 5, (i + 1) * 5);
+      List<UserAddress> connectedAddressToUser = addressesConnectToUser.stream().peek(address -> address.setUser(user)).toList();
+      userAddressSeeder.setUserAddressToUser(connectedAddressToUser);
+    }
   }
+
 }

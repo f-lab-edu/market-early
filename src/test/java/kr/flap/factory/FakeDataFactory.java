@@ -64,7 +64,7 @@ public class FakeDataFactory {
   public static List<User> createUserData() {
     User user1 = User.builder().email("test1@test.com")
             .grade(UserGrade.BRONZE)
-            .gender(UserGender.MAIL)
+            .gender(UserGender.MALE)
             .birthday(LocalDate.parse("1991-01-01"))
             .role(UserRole.USER)
             .status(UserStatus.ACTIVE)

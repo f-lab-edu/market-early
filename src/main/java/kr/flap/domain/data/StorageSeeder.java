@@ -7,7 +7,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Random;
+import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional
@@ -16,14 +17,25 @@ public class StorageSeeder {
 
   private final StorageRepository storageRepository;
 
-  public Storage seed() {
-    Random random = new Random();
-    StorageType randomStorageType = StorageType.values()[random.nextInt(StorageType.values().length)];
+  public boolean isDataAlreadySeeded() {
+    return storageRepository.count() > 0;
+  }
 
-    Storage storage = Storage.builder()
-            .type(randomStorageType)
+  public List<Storage> getStorageList() {
+    return storageRepository.findAll();
+  }
+
+  public void seed() {
+    List<Storage> storageList = IntStream.range(1, 9001)
+            .mapToObj(this::createStorage)
+            .toList();
+
+    storageRepository.saveAll(storageList);
+  }
+
+  public Storage createStorage(int i) {
+    return Storage.builder()
+            .type(StorageType.REFRIGERATED)
             .build();
-    storageRepository.save(storage);
-    return storage;
   }
 }

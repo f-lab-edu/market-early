@@ -15,6 +15,8 @@ public class DatabaseSeederConfiguration {
       if (!seederService.isDataAlreadySeeded()) {
         log.info("Seeding database...");
         seederService.seedDatabase();
+        log.info("ConnectedEntities...");
+        seederService.connectEntitiesToEntities();
       } else {
         log.info("Database already seeded. Skipping seeding process.");
       }

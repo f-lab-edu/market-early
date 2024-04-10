@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.IntStream;
+
 @Service
 @AllArgsConstructor
 @Transactional
@@ -13,11 +16,25 @@ public class CategorySeeder {
 
   private final CategoryRepository categoryRepository;
 
-  public Category seed() {
-    Category category = Category.builder().name("카테고리").build();
+  public void seed() {
+    List<Category> categoryList = IntStream.range(1, 101)
+            .mapToObj(this::createCategory)
+            .toList();
 
-    categoryRepository.save(category);
+    categoryRepository.saveAll(categoryList);
+  }
 
-    return category;
+  public List<Category> getCategoryList() {
+    return categoryRepository.findAll();
+  }
+
+  private Category createCategory(int i) {
+    return Category.builder()
+            .name("Category" + i)
+            .build();
+  }
+
+  public boolean isDataAlreadySeeded() {
+    return categoryRepository.count() > 0;
   }
 }

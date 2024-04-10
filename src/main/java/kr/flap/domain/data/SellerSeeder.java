@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 @Service
@@ -17,25 +16,25 @@ public class SellerSeeder {
 
   private final SellerRepository sellerRepository;
 
-  public static int maxSellers;
-
-  public Seller seed() {
-    List<Seller> sellerList = IntStream.range(1, maxSellers)
+  public void seed() {
+    List<Seller> sellerList = IntStream.range(1, 9001)
             .mapToObj(this::createSeller)
             .toList();
 
-    // Random 객체 생성
-    Random random = new Random();
+    sellerRepository.saveAll(sellerList);
+  }
 
-    // sellerList에서 랜덤하게 Seller 선택
-    Seller randomSeller = sellerList.get(random.nextInt(sellerList.size()));
-
-    return randomSeller;
+  public List<Seller> getSellerList() {
+    return sellerRepository.findAll();
   }
 
   private Seller createSeller(int i) {
     return Seller.builder()
             .name("Seller" + i)
             .build();
+  }
+
+  public boolean isDataAlreadySeeded() {
+    return sellerRepository.count() > 0;
   }
 }

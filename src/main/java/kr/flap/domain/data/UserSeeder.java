@@ -1,14 +1,13 @@
 package kr.flap.domain.data;
 
-import kr.flap.domain.model.cart.Cart;
 import kr.flap.domain.model.user.User;
+import kr.flap.domain.model.user.UserRepository;
 import kr.flap.domain.model.user.enums.UserGender;
 import kr.flap.domain.model.user.enums.UserGrade;
 import kr.flap.domain.model.user.enums.UserRole;
 import kr.flap.domain.model.user.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import kr.flap.domain.model.user.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -21,20 +20,25 @@ import java.util.stream.IntStream;
 public class UserSeeder {
 
   private final UserRepository userRepository;
-  private final CartSeeder cartSeeder;
 
   public void seed() {
-    List<User> userList = IntStream.range(1, 11)
+    List<User> userList = IntStream.range(1, 1001)
             .mapToObj(this::createUser)
             .toList();
 
     userRepository.saveAll(userList);
   }
 
+  public List<User> getUserList() {
+    return userRepository.findAll();
+  }
+
+  public boolean isDataAlreadySeeded() {
+    return userRepository.count() > 0;
+  }
+
   private User createUser(int index) {
-    Cart cart = cartSeeder.seed();
     return User.builder()
-            .cart(cart)
             .username("User" + index)
             .nickname("Nickname" + index)
             .status(UserStatus.ACTIVE)
