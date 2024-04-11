@@ -17,11 +17,14 @@ import java.util.Optional;
 @Service
 public class UserJoinService {
 
-  @Autowired
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
-  @Autowired
-  private BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+  public UserJoinService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    this.userRepository = userRepository;
+    this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+  }
 
   public User userJoinProcess(UserJoinDTO userJoinDTO) {
     Optional<User> email = userRepository.findByEmail(userJoinDTO.getEmail());
@@ -31,7 +34,6 @@ public class UserJoinService {
 
     String birthday = String.valueOf(userJoinDTO.getBirthday());
     LocalDate parseBirthday = LocalDate.parse(birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-    log.info("[user-join-thread] kr.flap.domain.model.user.service : 사용자 [{}] 가입 시도", userJoinDTO.getPassword());
     User user = User.builder()
             .username(userJoinDTO.getUsername())
             .password(bCryptPasswordEncoder.encode(userJoinDTO.getPassword()))
