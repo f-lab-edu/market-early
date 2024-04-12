@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/v1/user")
+@RequestMapping("/v1/users")
 @Slf4j
 public class LoginController {
 
