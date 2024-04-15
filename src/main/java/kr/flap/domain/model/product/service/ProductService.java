@@ -6,6 +6,8 @@ import kr.flap.domain.model.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -28,6 +30,11 @@ public class ProductService {
     return products.stream().map(ProductDto::new).collect(Collectors.toList());
   }
 
+  public Page<ProductDto> findAll(Pageable pageable) {
+    Page<Product> products = productRepository.findAll(pageable);
+    return products.map(ProductDto::new);
+  }
+
   public ProductDto findById(BigInteger id) {
     Product product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
     return new ProductDto(product);
@@ -37,8 +44,10 @@ public class ProductService {
     Seller seller = Seller.builder().name(sellerDto.getName())
             .build();
     sellerRepository.save(seller);
+
     Storage storage = Storage.builder().type(storageDto.getType())
             .build();
+
     storageRepository.save(storage);
     Product product = Product.builder().shortDescription(productDto.getShortDescription())
             .expirationDate(productDto.getExpirationDate())
@@ -78,9 +87,8 @@ public class ProductService {
     return productRepository.save(product);
   }
 
-  public BigInteger deleteProduct(BigInteger id) {
-    Product product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+  public void deleteProduct(BigInteger id) {
+    productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
     productRepository.deleteById(id);
-    return id;
   }
 }

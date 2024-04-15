@@ -54,7 +54,7 @@ class LoginControllerTest {
     UserLoginDTO userLoginDTO = new UserLoginDTO(email, password);
     User mockUser = User.builder().email(email)
             .grade(UserGrade.BRONZE)
-            .gender(UserGender.MAIL)
+            .gender(UserGender.MALE)
             .birthday(LocalDate.parse("1991-01-01"))
             .role(UserRole.USER)
             .status(UserStatus.ACTIVE)
@@ -65,7 +65,7 @@ class LoginControllerTest {
 
     User anotherUser = User.builder().email("another@example.com")
             .grade(UserGrade.BRONZE)
-            .gender(UserGender.MAIL)
+            .gender(UserGender.MALE)
             .birthday(LocalDate.parse("1992-02-02"))
             .role(UserRole.USER)
             .status(UserStatus.ACTIVE)
