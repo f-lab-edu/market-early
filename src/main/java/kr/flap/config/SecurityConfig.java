@@ -23,6 +23,7 @@ public class SecurityConfig {
 
     http.authorizeHttpRequests((auth) -> auth
             .requestMatchers("/v1/user/join", "/v1/user/login", "/v1/user/loginProc", "/v1/user/joinProc").permitAll()
+            .requestMatchers("/v1/products/**").permitAll()
             .anyRequest().authenticated()
     );
     http.csrf((auth) -> auth.disable());

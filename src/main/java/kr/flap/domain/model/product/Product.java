@@ -1,6 +1,7 @@
 package kr.flap.domain.model.product;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import kr.flap.domain.model.common.BaseTimeEntity;
 import lombok.*;
 
@@ -21,7 +22,7 @@ public class Product extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "storage_id")
   public Storage storage;
 
@@ -36,6 +37,7 @@ public class Product extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger productNo;
 
+  @Size(max = 100, message = "짧은 설명은 100자를 초과할 수 없습니다.")
   @Column(name = "short_description")
   public String shortDescription;
 

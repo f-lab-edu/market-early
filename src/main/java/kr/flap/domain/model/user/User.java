@@ -76,7 +76,7 @@ public class User extends BaseTimeEntity {
 
   @Builder
   public User(String username, String nickname, UserStatus status, UserRole role,
-              UserGrade grade, String email, String mobileNumber, LocalDate birthday, String password, UserGender gender) {
+              UserGrade grade, String email, String mobileNumber, LocalDate birthday, String password, UserGender gender,Cart cart) {
     this.username = username;
     this.nickname = nickname;
     this.status = status != null ? status : UserStatus.ACTIVE;
@@ -87,6 +87,7 @@ public class User extends BaseTimeEntity {
     this.birthday = birthday;
     this.password = password;
     this.gender = gender;
+    this.cart = cart;
   }
 
   @Override
