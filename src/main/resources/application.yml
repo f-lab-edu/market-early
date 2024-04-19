@@ -7,6 +7,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  profiles:
+    include: secret
+  config:
+    optional-includes: application-secret.properties
 
   jpa:
     hibernate:

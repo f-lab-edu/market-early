@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import kr.flap.domain.model.user.User;
 import kr.flap.domain.model.user.UserRepository;
 import kr.flap.domain.model.user.dto.UserLoginDTO;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,14 +14,13 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class UserLoginService {
 
-  @Autowired
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
-  @Autowired
-  private BCryptPasswordEncoder bCryptPasswordEncoder;
+  private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
   public Optional<User> userLoginProcess(UserLoginDTO userLoginDTO) {
     Optional<User> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
