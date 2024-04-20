@@ -39,4 +39,5 @@ out/
 ### macOS ###
 .DS_Store
 
+spy.log
 src/test/java/kr/flap/curlybackend/Solution.java

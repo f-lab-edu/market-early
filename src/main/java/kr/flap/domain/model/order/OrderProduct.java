@@ -29,7 +29,7 @@ public class OrderProduct extends BaseTimeEntity {
 
   public int quantity;
 
-  @Column(name = "product_price", nullable = false)
+  @Column(name = "product_price")
   public BigDecimal productPrice;
 
   @Builder

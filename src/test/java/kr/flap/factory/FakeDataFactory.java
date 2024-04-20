@@ -9,9 +9,9 @@ import kr.flap.domain.model.order.enums.DeliveryStatus;
 import kr.flap.domain.model.order.enums.OrderStatus;
 import kr.flap.domain.model.product.*;
 import kr.flap.domain.model.product.enums.StorageType;
+import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.user.User;
 import kr.flap.domain.model.user.UserAddress;
-import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.user.enums.UserGender;
 import kr.flap.domain.model.user.enums.UserGrade;
 import kr.flap.domain.model.user.enums.UserRole;
@@ -20,7 +20,6 @@ import net.datafaker.Faker;
 import net.datafaker.providers.base.Options;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
