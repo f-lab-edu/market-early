@@ -1,7 +1,6 @@
 package kr.flap.domain.model.user.service;
 
 import kr.flap.domain.model.user.User;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +27,7 @@ public class CustomUserDetails implements UserDetails {
 
   @Override
   public String getUsername() {
-    return userEntity.getUsername();
+    return userEntity.getEmail();
   }
 
   @Override
