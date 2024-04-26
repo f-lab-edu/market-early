@@ -29,7 +29,7 @@
         <button class="button" id="payment-button" style="margin-top: 30px" disabled>결제하기</button>
     </div>
 </div>
-<script>
+<script th:inline="javascript">
     const button = document.getElementById("payment-button");
     const coupon = document.getElementById("coupon-box");
     const generateRandomString = () => window.btoa(Math.random()).slice(0, 20);
@@ -38,9 +38,13 @@
     // TODO: clientKey는 개발자센터의 결제위젯 연동 키 > 클라이언트 키로 바꾸세요.
     // TODO: 구매자의 고유 아이디를 불러와서 customerKey로 설정하세요. 이메일・전화번호와 같이 유추가 가능한 값은 안전하지 않습니다.
     // @docs https://docs.tosspayments.com/reference/widget-sdk#sdk-설치-및-초기화
-    const clientKey = "test_ck_ZLKGPx4M3MbRDG7K5D1RVBaWypv1";
+    /*<![CDATA[*/
+    const clientKey = [[${clientKey}]];
+    const productUserInfo = [[${productUserInfo}]];
+    console.log("clientKey :" , clientKey);
     const customerKey = generateRandomString();
-    const paymentWidget = PaymentWidget(clientKey, customerKey); // 회원 결제
+    const paymentWidget = PaymentWidget(clientKey, customerKey);
+    /*]]>*/
     // const paymentWidget = PaymentWidget(clientKey, PaymentWidget.ANONYMOUS); // 비회원 결제
 
     // ------  결제 UI 렌더링 ------
@@ -75,17 +79,19 @@
 
     // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
     // @docs https://docs.tosspayments.com/reference/widget-sdk#requestpayment결제-정보
-    button.addEventListener("click", function () {
+    button.addEventListener("click", async function () {
         // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
         // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
+
+        // 결제 정보를 사용하여 결제 요청
         paymentWidget.requestPayment({
             orderId: generateRandomString(),
-            orderName: "토스 티셔츠 외 2건",
+            orderName: productUserInfo.productName,
             successUrl: window.location.origin + "/v1/payments/success",
-            failUrl: window.location.origin + "/v1/payments//fail",
-            customerEmail: "customer123@gmail.com",
-            customerName: "김토스",
-            customerMobilePhone: "01012341234",
+            failUrl: window.location.origin + "/v1/payments/fail",
+            customerEmail: productUserInfo.userEmail,
+            customerName: productUserInfo.userName,
+            customerMobilePhone: productUserInfo.userMobilePhone,
         });
     });
 </script>
