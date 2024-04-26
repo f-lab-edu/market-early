@@ -8,14 +8,12 @@ import kr.flap.domain.model.user.dto.error.UserLoginErrorResponseDTO;
 import kr.flap.domain.model.user.service.UserLoginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
@@ -27,16 +25,11 @@ public class LoginController {
 
 
   private final UserLoginService loginService;
-  private final AuthenticationManager authenticationManager;
 
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody UserLoginDTO userLoginDTO) {
     Optional<User> user = loginService.userLoginProcess(userLoginDTO);
     if (user.isPresent()) {
-      UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userLoginDTO.getEmail(), userLoginDTO.getPassword());
-      Authentication authentication = authenticationManager.authenticate(authenticationToken);
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-
       UserLoginResponseDTO responseDTO = new UserLoginResponseDTO(user.get().getId(), user.get().getUsername());
       return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     } else {
