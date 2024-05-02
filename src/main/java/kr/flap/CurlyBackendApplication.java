@@ -8,9 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class CurlyBackendApplication {
 
-  @Autowired
-  UserRepository userRepository;
-
   public static void main(String[] args) {
 		SpringApplication.run(CurlyBackendApplication.class, args);
   }

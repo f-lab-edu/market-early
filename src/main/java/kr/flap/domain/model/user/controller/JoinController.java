@@ -27,5 +27,4 @@ public class JoinController {
     UserJoinResponseDTO responseDTO = new UserJoinResponseDTO(user.getId(), user.getUsername());
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
   }
-
 }
