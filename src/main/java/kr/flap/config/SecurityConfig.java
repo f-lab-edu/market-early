@@ -5,6 +5,7 @@ import kr.flap.config.jwt.JWTUtil;
 import kr.flap.config.security.LoginFilter;
 import kr.flap.domain.model.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -28,18 +29,23 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
-    private final JWTUtil jwtUtil;
-    private final UserRepository userRepository;
+  @Value("${SPRING_JWT_EXPIRED_TIME}")
+  private Long expiredTime; // 10분
+
+  private final AuthenticationConfiguration authenticationConfiguration;
+  private final JWTUtil jwtUtil;
+  private final UserRepository userRepository;
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
     return configuration.getAuthenticationManager();
   }
+
   @Bean
   public BCryptPasswordEncoder bCryptPasswordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -53,7 +59,7 @@ public class SecurityConfig {
             .anyRequest().authenticated()
     );
     http.addFilterBefore(new JWTFilter(jwtUtil, userRepository), LoginFilter.class);
-    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, expiredTime), UsernamePasswordAuthenticationFilter.class);
 
     http.csrf((auth) -> auth.disable());
     http.formLogin(auth -> auth.disable());

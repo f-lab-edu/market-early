@@ -1,6 +1,7 @@
 package kr.flap.config.security;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.flap.config.jwt.JWTUtil;
@@ -20,16 +21,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
   private final AuthenticationManager authenticationManager;
   private final JWTUtil jwtUtil;
 
-  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+  private final Long expiredTime;
+
+  public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, Long expiredTime) {
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
+    this.expiredTime = expiredTime;
     setFilterProcessesUrl("/v1/users/login");
-  }
-
-  public LoginFilter(AuthenticationManager authenticationManager, AuthenticationManager authenticationManager1, JWTUtil jwtUtil) {
-    super(authenticationManager);
-    this.authenticationManager = authenticationManager1;
-    this.jwtUtil = jwtUtil;
   }
 
   @Override
@@ -58,9 +56,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     GrantedAuthority auth = iterator.next();
 
     String role = auth.getAuthority();
-    String token = jwtUtil.createJwt(username, role, 600 * 600 * 10L);
+    String token = jwtUtil.createJwt(username, role, expiredTime);
 
-    response.addHeader("Authorization", "Bearer " + token);
+    // 보안 옵션으로 jwt Token을 Cookie 담아서 Httponly 옵션 설정후 전달
+    Cookie cookie = new Cookie("Authorization",  token);
+    cookie.setHttpOnly(true);
+    response.addCookie(cookie);
   }
 
   //로그인 실패시 실행하는 메소드

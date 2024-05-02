@@ -30,8 +30,6 @@ public class JWTFilter extends OncePerRequestFilter {
     if (authorization == null || !authorization.startsWith("Bearer ")) {
       log.info("Authorization 헤더가 없음");
       filterChain.doFilter(request, response);
-
-      //조건이 해당되면 메소드 종료(필수)
       return;
     }
 
@@ -41,8 +39,6 @@ public class JWTFilter extends OncePerRequestFilter {
     if (jwtUtil.isExpired(token)) {
       log.info("토큰이 만료됨");
       filterChain.doFilter(request, response);
-
-      //조건이 해당되면 메소드 종료(필수)
       return;
     }
 
