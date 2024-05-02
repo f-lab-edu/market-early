@@ -43,3 +43,5 @@ spy.log
 src/test/java/kr/flap/curlybackend/Solution.java
 
 src/main/resources/application-secret.properties
+
+src/main/resources/keystore
