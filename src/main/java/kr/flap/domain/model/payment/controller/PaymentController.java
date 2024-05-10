@@ -53,7 +53,7 @@ public class PaymentController {
     ProductDto product = productService.findById(BigInteger.valueOf(randomProductId));
     String productName = product.getSubProducts().get(0).getName();
 
-    Model paymentInfo = paymentService.getPaymentInfo(model);
+    Model paymentInfo = paymentService.getPaymentInfo(model, request);
 
     paymentInfo.addAttribute("productName", productName);
 
@@ -69,13 +69,9 @@ public class PaymentController {
    * @throws Exception
    */
   @RequestMapping(value = "/fail", method = RequestMethod.GET)
-  public String failPayment(HttpServletRequest request, Model model) throws Exception {
-    String failCode = request.getParameter("code");
+  public String failPayment(HttpServletRequest request, Model model) {
     String failMessage = request.getParameter("message");
-
-    model.addAttribute("code", failCode);
     model.addAttribute("message", failMessage);
-
     return "/fail";
   }
 }

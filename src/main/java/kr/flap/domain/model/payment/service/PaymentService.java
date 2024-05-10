@@ -2,6 +2,8 @@ package kr.flap.domain.model.payment.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import kr.flap.config.jwt.JWTUtil;
 import kr.flap.domain.model.order.Delivery;
 import kr.flap.domain.model.order.DeliveryRepository;
 import kr.flap.domain.model.order.Order;
@@ -52,12 +54,14 @@ public class PaymentService {
   private final OrderRepository orderRepository;
   private final UserRepository userRepository;
   private final DeliveryRepository deliveryRepository;
+  private final JWTUtil jwtUtil;
 
   private final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
   private final int MIN_LENGTH = 6;
   private final int MAX_LENGTH = 64;
   private final Random RANDOM = new Random();
 
+  @Transactional
   public Map<String, Object> confirm(String jsonBody) throws IOException {
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -72,7 +76,6 @@ public class PaymentService {
     obj.put("amount", Integer.parseInt(amount));
     obj.put("paymentKey", paymentKey);
 
-    // TODO: 개발자센터에 로그인해서 내 결제위젯 연동 키 > 시크릿 키를 입력하세요. 시크릿 키는 외부에 공개되면 안돼요.
     // @docs https://docs.tosspayments.com/reference/using-api/api-keys
 
     // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
@@ -99,7 +102,6 @@ public class PaymentService {
     outputStream.write(json.getBytes(StandardCharsets.UTF_8));
 
     int code = connection.getResponseCode();
-    boolean isSuccess = code == 200;
 
     InputStream responseStream;
     String responseString = "";
@@ -177,7 +179,7 @@ public class PaymentService {
   }
 
   @Transactional(readOnly = true)
-  public Model getPaymentInfo(Model model) {
+  public Model getPaymentInfo(Model model, HttpServletRequest request) throws Exception {
     Map<String, String> productUserInfo = new HashMap<>();
 
     int randomProductId = new Random().nextInt(1000) + 1;
@@ -185,10 +187,16 @@ public class PaymentService {
     String productName = product.getSubProducts().get(0).getName();
     String randomOrderId = generateRandomOrderId();
 
-    //TODO: Jwt 작업이 완료휴 Merge되면 User쪽 데이터 연계할 예정
-    String userEmail = "customer123@gmail.com";
-    String userName = "김토스";
-    String userMobilePhone = "01012341234";
+    if (!jwtUtil.validateTokenFromCookie(request)) {
+      throw new SecurityException("Unauthorized request");
+    }
+    String cookie = jwtUtil.getTokenFromCookie(request);
+    User user = userRepository.findByEmail(jwtUtil.getUserEmail(cookie))
+            .orElseThrow(() -> new SecurityException("Unauthorized request"));
+
+    String userEmail = user.getEmail();
+    String userName = user.getNickname();
+    String userMobilePhone = user.getMobileNumber();
 
     productUserInfo.put("productName", productName);
     productUserInfo.put("orderId", randomOrderId);
