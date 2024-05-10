@@ -40,7 +40,6 @@ public class SecurityConfig {
   public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
     return configuration.getAuthenticationManager();
   }
-
   @Bean
   public BCryptPasswordEncoder bCryptPasswordEncoder() {
     return new BCryptPasswordEncoder();
@@ -52,7 +51,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests((auth) -> auth
             .requestMatchers("/v1/users/**").permitAll()
             .requestMatchers("/v1/products/**").permitAll()
-            .requestMatchers("/v1/payments/**").authenticated()
+            .requestMatchers("/v1/payments/**").permitAll()
             .requestMatchers("/success").permitAll()
             .requestMatchers("/confirm").permitAll()
             .requestMatchers("/style.css").permitAll()
@@ -77,7 +76,8 @@ public class SecurityConfig {
             "https://static.toss.im",
             "https://pages.tosspayments.com",
             "https://polyfill-fe.toss.im",
-            "https://assets-fe.toss.im"
+            "https://assets-fe.toss.im",
+            "http://localhost:8080/v1/payments/**"
     ));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

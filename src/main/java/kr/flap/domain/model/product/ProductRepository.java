@@ -14,6 +14,8 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, BigInteger> {
 
   @Query("SELECT p FROM Product p join fetch p.seller join fetch p.storage join fetch p.subProducts")
+  List<Product> findFetchAll();
+
   List<Product> findAll();
 
   @EntityGraph(attributePaths = {"seller", "storage", "subProducts"})

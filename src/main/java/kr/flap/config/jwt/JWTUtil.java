@@ -1,6 +1,8 @@
 package kr.flap.config.jwt;
 
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,5 +40,22 @@ public class JWTUtil {
             .expiration(new Date(System.currentTimeMillis() + expiredMs))
             .signWith(secretKey)
             .compact();
+  }
+
+  public String getTokenFromCookie(HttpServletRequest request) throws Exception {
+    Cookie[] cookies = request.getCookies();
+    if(cookies != null) {
+      for (Cookie cookie : cookies) {
+        if(cookie.getName().equals("Authorization")) {
+          return cookie.getValue();
+        }
+      }
+    }
+    throw new Exception("토큰이 없습니다.");
+  }
+
+  public boolean validateTokenFromCookie(HttpServletRequest request) throws Exception {
+    String token = getTokenFromCookie(request);
+    return token != null && !isExpired(token);
   }
 }

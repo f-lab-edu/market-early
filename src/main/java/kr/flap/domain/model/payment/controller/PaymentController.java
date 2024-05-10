@@ -1,19 +1,19 @@
 package kr.flap.domain.model.payment.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import kr.flap.domain.model.payment.service.ConfirmService;
+import kr.flap.domain.model.payment.service.PaymentService;
 import kr.flap.domain.model.product.dto.ProductDto;
 import kr.flap.domain.model.product.service.ProductService;
-import kr.flap.domain.model.user.service.UserLoginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -23,32 +23,12 @@ import java.util.Random;
 @Slf4j
 public class PaymentController {
 
- private final ConfirmService confirmService;
- private final ProductService productService;
- private final UserLoginService userLoginService;
+  private final PaymentService paymentService;
+  private final ProductService productService;
 
-  @GetMapping("/payment-info")
-  public Map<String, String> getPaymentInfo() {
-    Map<String, String> productUserInfo = new HashMap<>();
-    // 랜덤한 productId 생성
-    int randomProductId = new Random().nextInt(1000) + 1;
-    // 해당 productId에 해당하는 Product 정보 가져오기
-    ProductDto product = productService.findById(BigInteger.valueOf(randomProductId));
-    // User 정보 가져오기 (이 예제에서는 하드코딩된 정보를 사용합니다)
-    String userEmail = "customer123@gmail.com";
-    String userName = "김토스";
-    String userMobilePhone = "01012341234";
-    // 정보를 Map에 저장
-    productUserInfo.put("orderId", String.valueOf(product.getId()));
-//    productUserInfo.put("productName", product.getName());
-    productUserInfo.put("userEmail", userEmail);
-    productUserInfo.put("userName", userName);
-    productUserInfo.put("userMobilePhone", userMobilePhone);
-    return productUserInfo;
-  }
   @RequestMapping(value = "/confirm", method = RequestMethod.POST)
   public ResponseEntity<Map<String, Object>> confirmPayment(@RequestBody String jsonBody) throws Exception {
-    Map<String, Object> confirm = confirmService.confirm(jsonBody);
+    Map<String, Object> confirm = paymentService.confirm(jsonBody);
     int code = (Integer) confirm.get("code");
     return ResponseEntity.status(code).body(confirm);
   }
@@ -68,6 +48,15 @@ public class PaymentController {
 
   @RequestMapping(value = {"/", ""}, method = RequestMethod.GET)
   public String index(HttpServletRequest request, Model model) throws Exception {
+    int randomProductId = new Random().nextInt(1000) + 1;
+
+    ProductDto product = productService.findById(BigInteger.valueOf(randomProductId));
+    String productName = product.getSubProducts().get(0).getName();
+
+    Model paymentInfo = paymentService.getPaymentInfo(model, request);
+
+    paymentInfo.addAttribute("productName", productName);
+
     return "/checkout";
   }
 
@@ -80,13 +69,9 @@ public class PaymentController {
    * @throws Exception
    */
   @RequestMapping(value = "/fail", method = RequestMethod.GET)
-  public String failPayment(HttpServletRequest request, Model model) throws Exception {
-    String failCode = request.getParameter("code");
+  public String failPayment(HttpServletRequest request, Model model) {
     String failMessage = request.getParameter("message");
-
-    model.addAttribute("code", failCode);
     model.addAttribute("message", failMessage);
-
     return "/fail";
   }
 }
