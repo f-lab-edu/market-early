@@ -34,7 +34,8 @@ dependencies {
     implementation 'org.webjars:bootstrap:5.2.0'
     implementation 'net.datafaker:datafaker:2.0.2'
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.h2database:h2'
+//    runtimeOnly 'com.h2database:h2' // 개발용 Database
+    runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
