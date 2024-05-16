@@ -1,6 +1,5 @@
 package kr.flap.domain.model.order;
 
-import jakarta.transaction.Transactional;
 import kr.flap.domain.model.cart.Cart;
 import kr.flap.domain.model.cart.CartProduct;
 import kr.flap.domain.model.cart.CartProductRepository;
@@ -15,37 +14,27 @@ import kr.flap.domain.model.user.UserAddress;
 import kr.flap.domain.model.user.UserAddressRepository;
 import kr.flap.domain.model.user.UserRepository;
 import kr.flap.factory.FakeDataFactory;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static kr.flap.factory.FakeDataFactory.*;
-import static kr.flap.domain.model.user.enums.UserGrade.*;
-import static kr.flap.domain.model.user.enums.UserRole.ADMIN;
-import static kr.flap.domain.model.user.enums.UserRole.USER;
-import static kr.flap.domain.model.user.enums.UserStatus.ACTIVE;
-import static kr.flap.domain.model.user.enums.UserStatus.INACTIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
-@DataJpaTest()
-@TestPropertySource(locations = "classpath:application-test.yml")
+@DataJpaTest
+@TestPropertySource(locations = "classpath:application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class OrderTest {
 
@@ -165,11 +154,10 @@ class OrderTest {
       fixOrderProductData.get(i).setProduct(fixProductData.get(i));
     }
 
-    for (Cart cart : fixCartData) {
-      int randomValue = (int) (Math.random() * 3);
-      User user = fixUserData.get(randomValue);
-      cart.setUser(user);
-      cart.setUserCart(user);
+    for (int i = 0; i < 3; i++) {
+      User user = fixUserData.get(i);
+      fixCartData.get(i).setUser(user);
+      fixCartData.get(i).setUserCart(user);
     }
 
     for (int i = 0; i < fixCartProductData.size(); i++) {
