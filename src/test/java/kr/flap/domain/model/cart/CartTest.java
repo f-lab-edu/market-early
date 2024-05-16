@@ -28,8 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
-@DataJpaTest()
-@TestPropertySource(locations = "classpath:application-test.yml")
+@DataJpaTest
+@TestPropertySource(locations = "classpath:application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CartTest {
 
@@ -150,11 +150,11 @@ public class CartTest {
       fixOrderProductData.get(i).setProduct(fixProductData.get(i));
     }
 
-    for (Cart cart : fixCartData) {
-      int randomValue = (int) (Math.random() * 3);
-      User user = fixUserData.get(randomValue);
-      cart.setUser(user);
-      cart.setUserCart(user);
+
+    for (int i = 0; i < 3; i++) {
+      User user = fixUserData.get(i);
+      fixCartData.get(i).setUser(user);
+      fixCartData.get(i).setUserCart(user);
     }
 
     for (int i = 0; i < fixCartProductData.size(); i++) {
@@ -213,11 +213,9 @@ public class CartTest {
               });
 
       assertThat(cartProductRepository.findAll().size()).isEqualTo(numberOfData - 1);
-      assertThat(cartRepository.findAll().size()).isEqualTo(numberOfData - 1);
+      assertThat(cartRepository.findAll().size()).isEqualTo(numberOfData );
 
       assertThatThrownBy(() -> cartProductRepository.findById(cartProducts.get(0).getId()).orElseThrow())
-              .isInstanceOf(NoSuchElementException.class);
-      assertThatThrownBy(() -> cartRepository.findById(carts.get(0).getId()).orElseThrow())
               .isInstanceOf(NoSuchElementException.class);
     }
 

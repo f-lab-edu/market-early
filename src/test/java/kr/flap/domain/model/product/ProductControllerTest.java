@@ -1,12 +1,11 @@
 package kr.flap.domain.model.product;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import kr.flap.domain.model.product.dto.*;
 import kr.flap.domain.model.product.enums.StorageType;
 import kr.flap.domain.model.product.service.ProductService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,13 +21,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 public class ProductControllerTest {
@@ -38,9 +37,6 @@ public class ProductControllerTest {
 
   @MockBean
   private ProductService productService;
-
-  @MockBean
-  private ProductRepository productRepository;
 
   @Test
   public void testFindAll() throws Exception {

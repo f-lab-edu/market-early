@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("test")
 @DataJpaTest()
-@TestPropertySource(locations = "classpath:application-test.yml")
+@TestPropertySource(locations = "classpath:application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ProductTest {
 
@@ -153,11 +153,10 @@ public class ProductTest {
       fixOrderProductData.get(i).setProduct(fixProductData.get(i));
     }
 
-    for (Cart cart : fixCartData) {
-      int randomValue = (int) (Math.random() * 3);
-      User user = fixUserData.get(randomValue);
-      cart.setUser(user);
-      cart.setUserCart(user);
+    for (int i = 0; i < 3; i++) {
+      User user = fixUserData.get(i);
+      fixCartData.get(i).setUser(user);
+      fixCartData.get(i).setUserCart(user);
     }
 
     for (int i = 0; i < fixCartProductData.size(); i++) {
