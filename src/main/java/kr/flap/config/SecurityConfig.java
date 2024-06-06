@@ -55,6 +55,7 @@ public class SecurityConfig {
             .requestMatchers("/success").permitAll()
             .requestMatchers("/confirm").permitAll()
             .requestMatchers("/style.css").permitAll()
+            .requestMatchers("/actuator/**").permitAll()
             .anyRequest().authenticated()
     );
     http.addFilterBefore(new JWTFilter(jwtUtil, userRepository), LoginFilter.class);

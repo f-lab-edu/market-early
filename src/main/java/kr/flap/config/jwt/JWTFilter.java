@@ -23,6 +23,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+    String requestURI = request.getRequestURI();
+
+    // Actuator 경로에 대한 요청은 건너뛰기
+    if(requestURI.startsWith("/actuator")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     //request에서 Authorization 헤더를 찾음
     String authorization = request.getHeader("Authorization");
 

@@ -55,6 +55,8 @@ dependencies {
 
     // Hibernate Validator
     implementation 'org.hibernate.validator:hibernate-validator:7.0.1.Final'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
