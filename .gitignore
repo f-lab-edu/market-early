@@ -47,3 +47,7 @@ src/main/resources/application-secret.properties
 src/main/resources/keystore
 
 src/test/resources/application-test.properties
+
+prometheus-data
+grafana-data
+ymlFiles
