@@ -37,7 +37,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     //Authorization 헤더 검출
     if (authorization == null || !authorization.startsWith("Bearer ")) {
-      log.info("Authorization 헤더가 없음");
+//      log.info("Authorization 헤더가 없음");
       filterChain.doFilter(request, response);
       return;
     }
