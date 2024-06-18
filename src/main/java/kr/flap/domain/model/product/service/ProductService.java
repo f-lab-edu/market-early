@@ -4,6 +4,7 @@ import kr.flap.domain.model.product.*;
 import kr.flap.domain.model.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class ProductService {
     return products.map(ProductDto::new);
   }
 
+  @Cacheable(value = "products", key = "#id")
   public ProductDto findById(BigInteger id) {
     Product product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
     return new ProductDto(product);

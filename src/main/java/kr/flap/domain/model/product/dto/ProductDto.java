@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,8 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProductDto {
+public class ProductDto implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   @NotNull(message = "ID는 필수입니다.")
   private BigInteger id;
