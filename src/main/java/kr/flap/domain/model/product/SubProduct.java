@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.Map;
 @Setter
 @Entity
 @Table(name = "sub_products")
-public class SubProduct extends BaseTimeEntity {
+public class SubProduct extends BaseTimeEntity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

@@ -30,7 +30,7 @@ ARG JAR_FILE=build/libs/curly-backend-0.0.1-SNAPSHOT.jar
 COPY ${JAR_FILE}  app.jar
 
 # 컨테이너가 8080 포트를 외부에 노출하도록 설정합니다.
-EXPOSE 8080
+EXPOSE 9191
 
 # 컨테이너가 시작될 때 실행할 명령을 정의합니다. java -jar app.jar 명령을 실행하여 JAR 파일을 실행합니다.
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java",  "-Xms3g", "-Xmx3g", "-Dspring.profiles.active=prod,secret", "-jar", "app.jar"]

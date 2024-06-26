@@ -1,5 +1,6 @@
 package kr.flap.domain.model.product;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -18,6 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, BigInteger> {
 
   List<Product> findAll();
 
+  @Cacheable(value = "productsPage", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
   @EntityGraph(attributePaths = {"seller", "storage", "subProducts"})
   Page<Product> findAll(Pageable  pageable);
 }

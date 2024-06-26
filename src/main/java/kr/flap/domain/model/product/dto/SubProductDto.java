@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
@@ -13,7 +14,7 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SubProductDto {
+public class SubProductDto implements Serializable {
 
   @NotNull(message = "ID는 필수입니다.")
   private BigInteger id;
