@@ -5,6 +5,7 @@ import kr.flap.domain.model.common.BaseTimeEntity;
 import kr.flap.domain.model.product.enums.StorageType;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -12,7 +13,7 @@ import java.math.BigInteger;
 @Setter
 @Entity
 @Table(name = "storages")
-public class Storage extends BaseTimeEntity {
+public class Storage extends BaseTimeEntity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

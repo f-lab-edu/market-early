@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kr.flap.domain.model.common.BaseTimeEntity;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "sellers")
-public class Seller extends BaseTimeEntity {
+public class Seller extends BaseTimeEntity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

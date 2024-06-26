@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import kr.flap.domain.model.common.BaseTimeEntity;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 @Entity
 @Table(name = "products")
-public class Product extends BaseTimeEntity {
+public class Product extends BaseTimeEntity implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
