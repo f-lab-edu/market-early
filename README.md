@@ -26,5 +26,5 @@
 * Toss 결제 API 통합 및 트랜잭션 관리
 * Redis 캐시 적용으로 대량의 트래픽 발생시 p95, TPS, MTT performance 향상
 * 대용량 데이터 처리를 위한 Mysql Indexing 및 Query Optimization
-* 분산 서버 환경에서의 인증 관리
+* 분산 서버 환경에서의 인증 관리를 위한 JWT Token 적용
 
