@@ -20,7 +20,7 @@
 
 🔖 아키텍처
 ---
-![Architecture](./image/architecture.png)
+![Architecture](./image/new_architecture.png)
 
 ## 🤔 Technical Issue & Solution
 * Toss 결제 API 통합 및 트랜잭션 관리
