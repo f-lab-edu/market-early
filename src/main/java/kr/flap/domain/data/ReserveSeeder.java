@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.reserve.ReserveRepository;
 import lombok.AllArgsConstructor;
@@ -13,16 +14,17 @@ import java.util.stream.IntStream;
 @Service
 @AllArgsConstructor
 @Transactional
-public class ReserveSeeder {
+public class ReserveSeeder implements BaseSeeder{
 
   private final ReserveRepository reserveRepository;
 
-  public List<Reserve> seed() {
-    List<Reserve> reserveList = IntStream.range(1, 5001)
+  @Override
+  public void  seed() {
+    List<Reserve> reserveList = IntStream.range(1, SeederRange.RESERVE.getRange() + 1)
             .mapToObj(this::createReserve)
             .toList();
 
-    return reserveRepository.saveAll(reserveList);
+     reserveRepository.saveAll(reserveList);
   }
 
   private Reserve createReserve(int i) {
@@ -40,6 +42,7 @@ public class ReserveSeeder {
     return reserveRepository.findAll();
   }
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return reserveRepository.count() > 0;
   }

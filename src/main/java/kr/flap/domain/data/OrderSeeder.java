@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.order.Order;
 import kr.flap.domain.model.order.OrderRepository;
 import kr.flap.domain.model.order.enums.OrderStatus;
@@ -13,16 +14,16 @@ import java.util.stream.IntStream;
 @Service
 @AllArgsConstructor
 @Transactional
-public class OrderSeeder {
+public class OrderSeeder implements BaseSeeder{
 
   private final OrderRepository orderRepository;
 
-  public List<Order> seed() {
-    List<Order> orderList = IntStream.range(1, 3001)
+  public void seed() {
+    List<Order> orderList = IntStream.range(1, SeederRange.ORDER.getRange() + 1)
             .mapToObj(this::createOrder)
             .toList();
 
-    return orderRepository.saveAll(orderList);
+     orderRepository.saveAll(orderList);
   }
 
   private Order createOrder(int i) {
@@ -39,6 +40,7 @@ public class OrderSeeder {
     return orderRepository.findAll();
   }
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return orderRepository.count() > 0;
   }

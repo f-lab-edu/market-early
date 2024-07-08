@@ -11,11 +11,12 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Transactional
-public class CartProductSeeder {
+public class CartProductSeeder implements JoinTableSeeder<CartProduct> {
 
   private final CartProductRepository cartProductRepository;
 
-  public void setCartProductList(List<CartProduct> cartProductList) {
+  @Override
+  public void setJoinTableList(List<CartProduct> cartProductList) {
     cartProductRepository.saveAll(cartProductList);
   }
 }

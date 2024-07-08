@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.user.User;
 import kr.flap.domain.model.user.UserRepository;
 import kr.flap.domain.model.user.enums.UserGender;
@@ -17,12 +18,13 @@ import java.util.stream.IntStream;
 @Service
 @Transactional
 @AllArgsConstructor
-public class UserSeeder {
+public class UserSeeder implements BaseSeeder{
 
   private final UserRepository userRepository;
 
+  @Override
   public void seed() {
-    List<User> userList = IntStream.range(1, 1001)
+    List<User> userList = IntStream.range(1, SeederRange.USER.getRange() + 1)
             .mapToObj(this::createUser)
             .toList();
 
@@ -33,6 +35,7 @@ public class UserSeeder {
     return userRepository.findAll();
   }
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return userRepository.count() > 0;
   }

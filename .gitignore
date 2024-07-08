@@ -51,3 +51,4 @@ src/test/resources/application-test.properties
 prometheus-data
 grafana-data
 ymlFiles
+logs
