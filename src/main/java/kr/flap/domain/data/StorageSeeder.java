@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.product.Storage;
 import kr.flap.domain.model.product.StorageRepository;
 import kr.flap.domain.model.product.enums.StorageType;
@@ -13,10 +14,11 @@ import java.util.stream.IntStream;
 @Service
 @Transactional
 @AllArgsConstructor
-public class StorageSeeder {
+public class StorageSeeder implements BaseSeeder{
 
   private final StorageRepository storageRepository;
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return storageRepository.count() > 0;
   }
@@ -25,8 +27,9 @@ public class StorageSeeder {
     return storageRepository.findAll();
   }
 
+  @Override
   public void seed() {
-    List<Storage> storageList = IntStream.range(1, 9001)
+    List<Storage> storageList = IntStream.range(1, SeederRange.STORAGE.getRange() + 1)
             .mapToObj(this::createStorage)
             .toList();
 

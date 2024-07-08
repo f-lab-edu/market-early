@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.product.SubProduct;
 import kr.flap.domain.model.product.SubProductRepository;
 import lombok.AllArgsConstructor;
@@ -14,12 +15,13 @@ import java.util.stream.IntStream;
 @Service
 @Transactional
 @AllArgsConstructor
-public class SubProductSeeder {
+public class SubProductSeeder implements BaseSeeder{
 
   private final SubProductRepository subProductRepository;
 
+  @Override
   public void seed() {
-    List<SubProduct> subProductList = IntStream.range(1, 18001)
+    List<SubProduct> subProductList = IntStream.range(1, SeederRange.SUBPRODUCT.getRange() + 1)
             .mapToObj(this::createSubProduct)
             .toList();
 
@@ -52,6 +54,7 @@ public class SubProductSeeder {
             .build();
   }
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return subProductRepository.count() > 0;
   }

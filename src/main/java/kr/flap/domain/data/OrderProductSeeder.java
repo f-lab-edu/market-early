@@ -11,11 +11,12 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Transactional
-public class OrderProductSeeder {
+public class OrderProductSeeder implements JoinTableSeeder<OrderProduct>  {
 
   private final OrderProductRepository orderProductRepository;
 
-  public void setOrderProductList(List<OrderProduct> orderProductList) {
+  @Override
+  public void setJoinTableList(List<OrderProduct> orderProductList) {
     orderProductRepository.saveAll(orderProductList);
   }
 }
