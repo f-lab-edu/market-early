@@ -21,6 +21,8 @@ import java.util.Random;
 @AllArgsConstructor
 @Transactional
 public class DatabaseSeederService {
+
+  private final List<BaseSeeder> seeders;
   private final UserSeeder userSeeder;
   private final UserAddressSeeder userAddressSeeder;
   private final CartSeeder cartSeeder;
@@ -36,64 +38,17 @@ public class DatabaseSeederService {
   private final CategorySeeder categorySeeder;
 
   public void seedDatabase() {
-    if(!userSeeder.isDataAlreadySeeded()) {
-      userSeeder.seed();
-    }
-
-    if(!userAddressSeeder.isDataAlreadySeeded()) {
-      userAddressSeeder.seed();
-    }
-
-    if(!cartSeeder.isDataAlreadySeeded()) {
-      cartSeeder.seed();
-    }
-
-    if(!reserveSeeder.isDataAlreadySeeded()) {
-      reserveSeeder.seed();
-    }
-
-    if (!orderSeeder.isDataAlreadySeeded()) {
-      orderSeeder.seed();
-    }
-
-    if(!deliverySeeder.isDataAlreadySeeded()) {
-      deliverySeeder.seed();
-    }
-
-    if(!productSeeder.isDataAlreadySeeded()) {
-      productSeeder.seed();
-    }
-
-    if(!sellerSeeder.isDataAlreadySeeded()) {
-      sellerSeeder.seed();
-    }
-
-    if(!storageSeeder.isDataAlreadySeeded()) {
-      storageSeeder.seed();
-    }
-
-    if(!subProductSeeder.isDataAlreadySeeded()) {
-      subProductSeeder.seed();
-    }
-
-    if(!categorySeeder.isDataAlreadySeeded()) {
-      categorySeeder.seed();
-    }
+    seeders.forEach(seeder -> {
+      if(!seeder.isDataAlreadySeeded()) {
+        seeder.seed();
+      }
+    });
   }
 
   public boolean isDataAlreadySeeded() {
-    return userSeeder.isDataAlreadySeeded() &&
-            userAddressSeeder.isDataAlreadySeeded() &&
-            cartSeeder.isDataAlreadySeeded() &&
-            reserveSeeder.isDataAlreadySeeded() &&
-            orderSeeder.isDataAlreadySeeded() &&
-            deliverySeeder.isDataAlreadySeeded() &&
-            productSeeder.isDataAlreadySeeded() &&
-            sellerSeeder.isDataAlreadySeeded() &&
-            storageSeeder.isDataAlreadySeeded() &&
-            subProductSeeder.isDataAlreadySeeded() &&
-            categorySeeder.isDataAlreadySeeded();
+    return seeders.stream().allMatch(BaseSeeder::isDataAlreadySeeded);
   }
+
   public void connectEntitiesToEntities() {
     connectUserToUserAddress();
     connectUserToCart();
@@ -108,7 +63,7 @@ public class DatabaseSeederService {
     connectToSubProductToCategory();
   }
 
-  private void connectOrderToDelivery() {
+  public void connectOrderToDelivery() {
     List<Order> orderList = orderSeeder.getOrderList();
     List<Delivery> deliveryList = deliverySeeder.getDeliveryList();
     for (int i = 0; i < orderList.size(); i++) {
@@ -119,7 +74,7 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectToSubProductToCategory() {
+  public void connectToSubProductToCategory() {
     List<SubProduct> subProductList = subProductSeeder.getSubProductList();
     List<Category> categoryList = categorySeeder.getCategoryList();
 
@@ -133,7 +88,7 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectToSubProductToProduct() {
+  public void connectToSubProductToProduct() {
     List<Product> productList = productSeeder.getProductList();
     List<SubProduct> subProductList = subProductSeeder.getSubProductList();
     for (int i = 0; i < productList.size(); i++) {
@@ -143,7 +98,7 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectProductToStorage() {
+  public void connectProductToStorage() {
     List<Product> productList = productSeeder.getProductList();
     List<Storage> storageList = storageSeeder.getStorageList();
     for (int i = 0; i < productList.size(); i++) {
@@ -154,7 +109,7 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectProductToSeller() {
+  public void connectProductToSeller() {
     List<Product> productList = productSeeder.getProductList();
     List<Seller> sellerList = sellerSeeder.getSellerList();
     for (int i = 0; i < productList.size(); i++) {
@@ -165,61 +120,61 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectProductToCart() {
+  public void connectProductToCart() {
     List<Product> productList = productSeeder.getProductList();
     List<Cart> cartList = cartSeeder.getCartList();
     for (int i = 0; i < cartList.size(); i++) {
       Cart cart = cartList.get(i);
-      List<Product> productsForCart = productList.subList(i * 3, (i + 1) * 3);
+      List<Product> productsForCart = productList.subList(i * 2, (i + 1) * 2);
       List<CartProduct> cartProducts = productsForCart.stream().map(product -> CartProduct.builder()
               .cart(cart)
               .product(product)
               .quantity(1)
               .productPrice(BigDecimal.valueOf(100))
               .build()).toList();
-      cartProductSeeder.setCartProductList(cartProducts);
+      cartProductSeeder.setJoinTableList(cartProducts);
     }
   }
 
-  private void connectOrderToProduct() {
+  public void connectOrderToProduct() {
     List<Order> orderList = orderSeeder.getOrderList();
     List<Product> productList = productSeeder.getProductList();
     for (int i = 0; i < orderList.size(); i++) {
       Order order = orderList.get(i);
-      List<Product> productsForOrder = productList.subList(i * 3, (i + 1) * 3);
+      List<Product> productsForOrder = productList.subList(i * 2, (i + 1) * 2);
       int quantity = i;
       List<OrderProduct> orderProducts = productsForOrder.stream().map(product -> OrderProduct.builder()
               .order(order)
               .product(product)
               .quantity(quantity)
               .build()).toList();
-      orderProductSeeder.setOrderProductList(orderProducts);
+      orderProductSeeder.setJoinTableList(orderProducts);
     }
   }
 
-  private void connectUserToOrder() {
+  public void connectUserToOrder() {
     List<User> userList = userSeeder.getUserList();
     List<Order> orderList = orderSeeder.getOrderList();
     for (int i = 0; i < userList.size(); i++) {
       User user = userList.get(i);
-      List<Order> userForOrder = orderList.subList(i * 3, (i + 1) * 3);
+      List<Order> userForOrder = orderList.subList(i * 2, (i + 1) * 2);
       List<Order> setOrderToUserList = userForOrder.stream().peek(order -> order.setUser(user)).toList();
       orderSeeder.setOrderList(setOrderToUserList);
     }
   }
 
-  private void connectUserToReserve() {
+  public void connectUserToReserve() {
     List<User> userList = userSeeder.getUserList();
     List<Reserve> reserveList = reserveSeeder.getReserveList();
     for (int i = 0; i < userList.size(); i++) {
       User user = userList.get(i);
-      List<Reserve> reservesForUser = reserveList.subList(i * 5, (i + 1) * 5);
+      List<Reserve> reservesForUser = reserveList.subList(i * 2, (i + 1) * 2);
       List<Reserve> saveReserveSetUserList = reservesForUser.stream().peek(reserve -> reserve.setUser(user)).toList();
       reserveSeeder.setReserveList(saveReserveSetUserList);
     }
   }
 
-  private void connectUserToCart() {
+  public void connectUserToCart() {
     List<User> userList = userSeeder.getUserList();
     List<Cart> cartList = cartSeeder.getCartList();
 
@@ -231,15 +186,15 @@ public class DatabaseSeederService {
     }
   }
 
-  private void connectUserToUserAddress() {
+  public void connectUserToUserAddress() {
     List<User> userList = userSeeder.getUserList();
     List<UserAddress> userAddresseList = userAddressSeeder.getUserAddresses();
+
     for (int i = 0; i < userList.size(); i++) {
       User user = userList.get(i);
-      List<UserAddress> addressesConnectToUser = userAddresseList.subList(i * 5, (i + 1) * 5);
+      List<UserAddress> addressesConnectToUser = userAddresseList.subList(i *2, (i + 1) * 2);
       List<UserAddress> connectedAddressToUser = addressesConnectToUser.stream().peek(address -> address.setUser(user)).toList();
       userAddressSeeder.setUserAddressToUser(connectedAddressToUser);
     }
   }
-
 }

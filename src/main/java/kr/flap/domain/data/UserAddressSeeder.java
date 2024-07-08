@@ -1,5 +1,6 @@
 package kr.flap.domain.data;
 
+import kr.flap.config.SeederRange;
 import kr.flap.domain.model.user.UserAddress;
 import kr.flap.domain.model.user.UserAddressRepository;
 import lombok.AllArgsConstructor;
@@ -12,12 +13,13 @@ import java.util.stream.IntStream;
 @Service
 @Transactional
 @AllArgsConstructor
-public class UserAddressSeeder {
+public class UserAddressSeeder implements BaseSeeder{
 
   private final UserAddressRepository userAddressRepository;
 
+  @Override
   public void seed() {
-    List<UserAddress> userAddressList = IntStream.range(1, 5001)
+    List<UserAddress> userAddressList = IntStream.range(1, SeederRange.USER_ADDRESS.getRange() + 1)
             .mapToObj(this::createUserAddress)
             .toList();
 
@@ -32,6 +34,7 @@ public class UserAddressSeeder {
     userAddressRepository.saveAll(userAddresses);
   }
 
+  @Override
   public boolean isDataAlreadySeeded() {
     return userAddressRepository.count() > 0;
   }
