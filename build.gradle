@@ -61,6 +61,11 @@ dependencies {
     // Redis 추가
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // Naver Cloud Object 연결 추가
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
 }
 
 tasks.named('test') {
