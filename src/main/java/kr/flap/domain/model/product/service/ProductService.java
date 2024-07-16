@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,8 @@ public class ProductService {
   private final SellerRepository sellerRepository;
   private final StorageRepository storageRepository;
   private final SubProductRepository subProductRepository;
+  private final UnsplashService unsplashService;
+
   public List<ProductDto> findAll() {
     List<Product> products = productRepository.findFetchAll();
     return products.stream().map(ProductDto::new).collect(Collectors.toList());
@@ -40,7 +43,7 @@ public class ProductService {
     return new ProductDto(product);
   }
 
-  public Product createProduct(ProductDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductDto> subProductDtos) {
+  public Product createProduct(ProductDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductDto> subProductDtos) throws IOException {
     Seller seller = Seller.builder().name(sellerDto.getName())
             .build();
     sellerRepository.save(seller);
@@ -49,9 +52,13 @@ public class ProductService {
             .build();
 
     storageRepository.save(storage);
+
+    ImageUploadResponse imageUploadResponse = unsplashService.uploadImage();
+
     Product product = Product.builder().shortDescription(productDto.getShortDescription())
             .expirationDate(productDto.getExpirationDate())
-            .mainImageUrl(productDto.getMainImageUrl())
+            .mainImageUrl(imageUploadResponse.getObjectUrl())
+            .eTag(imageUploadResponse.getETag())
             .seller(seller)
             .storage(storage)
             .build();

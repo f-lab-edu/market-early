@@ -6,6 +6,7 @@ import kr.flap.domain.model.product.dto.ProductDto;
 import kr.flap.domain.model.product.dto.ProductRequestDto;
 import kr.flap.domain.model.product.dto.ProductUpdateDto;
 import kr.flap.domain.model.product.service.ProductService;
+import kr.flap.domain.model.product.service.UnsplashService;
 import kr.flap.domain.model.product.validation.ValidId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -43,7 +45,7 @@ public class ProductController {
   }
 
   @PostMapping
-  public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) {
+  public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) throws IOException {
     Product product = productService.createProduct(productRequestDto.getProduct(), productRequestDto.getSeller(), productRequestDto.getStorage(), productRequestDto.getSubProducts());
     ProductDto createdProduct = new ProductDto(product);
     return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
