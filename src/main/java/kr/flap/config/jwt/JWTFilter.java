@@ -2,6 +2,7 @@ package kr.flap.config.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.flap.domain.model.user.UserRepository;
@@ -32,21 +33,22 @@ public class JWTFilter extends OncePerRequestFilter {
       return;
     }
 
-    //request에서 Authorization 헤더를 찾음
-    String authorization = request.getHeader("Authorization");
-
-    //Authorization 헤더 검출
-    if (authorization == null || !authorization.startsWith("Bearer ")) {
-//      log.info("Authorization 헤더가 없음");
-      filterChain.doFilter(request, response);
-      return;
+    // JWT 토큰을 쿠키에서 추출
+    String token = null;
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        log.info("cookie name: {}", cookie.getName());
+        if ("Authorization".equals(cookie.getName())) {
+          token = cookie.getValue();
+          break;
+        }
+      }
     }
 
-    String token = authorization.split(" ")[1];
-
-    //토큰 소멸 시간 검증
-    if (jwtUtil.isExpired(token)) {
-      log.info("토큰이 만료됨");
+    // JWT 토큰이 없거나 유효하지 않은 경우 필터 체인 진행
+    if (token == null || jwtUtil.isExpired(token)) {
+      log.info("토큰이 없거나 만료됨");
       filterChain.doFilter(request, response);
       return;
     }

@@ -9,10 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -26,5 +25,17 @@ public class JoinController {
     User user = joinService.userJoinProcess(userJoinDTO);
     UserJoinResponseDTO responseDTO = new UserJoinResponseDTO(user.getId(), user.getUsername());
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+  }
+
+  @GetMapping("/test")
+  public String test() {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    if (principal instanceof UserDetails) {
+      UserDetails userDetails = (UserDetails) principal;
+      return "User Authorities: " + userDetails.getAuthorities();
+    } else {
+      return  "Principal: " + principal.toString();
+    }
   }
 }

@@ -1,5 +1,5 @@
 package kr.flap.domain.model.user.enums;
 
 public enum UserRole {
-  ADMIN, USER
+  ROLE_ADMIN, ROLE_USER, ROLE_SELLER
 }
