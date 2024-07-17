@@ -3,6 +3,7 @@ package kr.flap.domain.model.user.service;
 import kr.flap.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Collection<GrantedAuthority> collection = new ArrayList<>();
-    collection.add(() -> String.valueOf(userEntity.getRole()));
+    collection.add(new SimpleGrantedAuthority(userEntity.getRole().name()));
     return collection;
   }
 

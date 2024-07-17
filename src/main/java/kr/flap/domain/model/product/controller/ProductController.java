@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -42,6 +43,7 @@ public class ProductController {
     return ResponseEntity.ok(product);
   }
 
+  @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SELLER')")
   @PostMapping
   public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductRequestDto productRequestDto) {
     Product product = productService.createProduct(productRequestDto.getProduct(), productRequestDto.getSeller(), productRequestDto.getStorage(), productRequestDto.getSubProducts());

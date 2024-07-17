@@ -12,6 +12,8 @@ import kr.flap.domain.model.user.enums.UserRole;
 import kr.flap.domain.model.user.enums.UserStatus;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
@@ -40,7 +42,7 @@ public class User extends BaseTimeEntity {
   private UserStatus status;
 
   @Enumerated(EnumType.STRING)
-  @ColumnDefault("'USER'")
+  @ColumnDefault("'ROLE_USER'")
   private UserRole role;
 
   @Enumerated(EnumType.STRING)
@@ -76,11 +78,12 @@ public class User extends BaseTimeEntity {
 
   @Builder
   public User(String username, String nickname, UserStatus status, UserRole role,
-              UserGrade grade, String email, String mobileNumber, LocalDate birthday, String password, UserGender gender,Cart cart) {
+              UserGrade grade, String email, String mobileNumber, LocalDate birthday,
+              String password, UserGender gender,Cart cart) {
     this.username = username;
     this.nickname = nickname;
     this.status = status != null ? status : UserStatus.ACTIVE;
-    this.role = role != null ? role : UserRole.USER;
+    this.role = role != null ? role : UserRole.ROLE_USER;
     this.grade = grade != null ? grade : UserGrade.BRONZE;
     this.email = email;
     this.mobileNumber = mobileNumber;
@@ -104,9 +107,9 @@ public class User extends BaseTimeEntity {
             ", birthday=" + birthday +
             ", gender=" + gender +
             ", password='" + password + '\'' +
-            ", cart=" + cart +
-            ", userAddressList=" + userAddressList +
-            ", reserveList=" + reserveList +
+//            ", cart=" + cart +
+//            ", userAddressList=" + userAddressList +
+//            ", reserveList=" + reserveList +
             '}';
   }
 }

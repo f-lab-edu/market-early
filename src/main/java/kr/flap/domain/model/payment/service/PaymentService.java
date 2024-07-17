@@ -132,7 +132,7 @@ public class PaymentService {
               .username("testUser1")
               .gender(UserGender.MALE)
               .birthday(LocalDate.parse("1991-01-01"))
-              .role(UserRole.USER)
+              .role(UserRole.ROLE_USER)
               .status(UserStatus.ACTIVE)
               .mobileNumber("010-1111-1111")
               .nickname("testUser1")
