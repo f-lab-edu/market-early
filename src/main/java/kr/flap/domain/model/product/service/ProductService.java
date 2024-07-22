@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,7 +26,8 @@ public class ProductService {
   private final SellerRepository sellerRepository;
   private final StorageRepository storageRepository;
   private final SubProductRepository subProductRepository;
-  private final UnsplashService unsplashService;
+  private final ProductImageRepository productImageRepository;
+  private final NaverCloudService naverCloudService;
 
   public List<ProductDto> findAll() {
     List<Product> products = productRepository.findFetchAll();
@@ -43,7 +45,8 @@ public class ProductService {
     return new ProductDto(product);
   }
 
-  public Product createProduct(ProductDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductDto> subProductDtos) throws IOException {
+  public Product createProduct(ProductCreateDto productDto, SellerDto sellerDto,
+                               StorageDto storageDto, List<SubProductCreateDto> subProductDtos, List<MultipartFile> images) throws IOException {
     Seller seller = Seller.builder().name(sellerDto.getName())
             .build();
     sellerRepository.save(seller);
@@ -53,16 +56,35 @@ public class ProductService {
 
     storageRepository.save(storage);
 
-    ImageUploadResponse imageUploadResponse = unsplashService.uploadImage();
+    List<ImageUploadResponse> imageUploadResponses = images.stream()
+            .map(file -> {
+              try {
+                return naverCloudService.uploadImage(file);
+              } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image", e);
+              }
+            })
+            .collect(Collectors.toList());
+
+    String mainImageUrl = imageUploadResponses.isEmpty() ? null : imageUploadResponses.get(0).getObjectUrl();
 
     Product product = Product.builder().shortDescription(productDto.getShortDescription())
             .expirationDate(productDto.getExpirationDate())
-            .mainImageUrl(imageUploadResponse.getObjectUrl())
-            .eTag(imageUploadResponse.getETag())
+            .mainImageUrl(mainImageUrl)
             .seller(seller)
             .storage(storage)
             .build();
     productRepository.save(product);
+
+    List<ProductImage> productImages = imageUploadResponses.stream()
+            .map(response -> ProductImage.builder()
+                    .product(product)
+                    .imageUrl(response.getObjectUrl())
+                    .eTag(response.getETag())
+                    .build())
+            .collect(Collectors.toList());
+
+    productImageRepository.saveAll(productImages);
 
     subProductDtos.forEach(subProductDto -> {
       SubProduct subProduct = SubProduct.builder().name(subProductDto.getName())
