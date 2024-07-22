@@ -48,8 +48,8 @@ public class Product extends BaseTimeEntity implements Serializable {
   @Column(name = "main_image_url")
   public String mainImageUrl;
 
-  @Column(name = "eTag")
-  public String eTag;
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  public List<ProductImage> productImages = new ArrayList<>();
 
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   public List<SubProduct> subProducts = new ArrayList<>();
@@ -60,13 +60,12 @@ public class Product extends BaseTimeEntity implements Serializable {
   }
 
   @Builder
-  public Product(Storage storage, Seller seller, String shortDescription, LocalDate expirationDate, String mainImageUrl,String eTag) {
+  public Product(Storage storage, Seller seller, String shortDescription, LocalDate expirationDate, String mainImageUrl) {
     this.storage = storage;
     this.seller = seller;
     this.shortDescription = shortDescription;
     this.expirationDate = expirationDate;
     this.mainImageUrl = mainImageUrl;
-    this.eTag = eTag;
     this.setProductNo();
   }
 }
