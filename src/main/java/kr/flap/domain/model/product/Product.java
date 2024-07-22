@@ -49,6 +49,9 @@ public class Product extends BaseTimeEntity implements Serializable {
   public String mainImageUrl;
 
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  public List<ProductImage> productImages = new ArrayList<>();
+
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   public List<SubProduct> subProducts = new ArrayList<>();
 
   private void setProductNo() {

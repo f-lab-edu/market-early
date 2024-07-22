@@ -3,6 +3,7 @@ package kr.flap.domain.model.user.dto;
 import jakarta.validation.constraints.*;
 import kr.flap.domain.model.user.UserAddress;
 import kr.flap.domain.model.user.enums.UserGender;
+import kr.flap.domain.model.user.enums.UserRole;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -39,8 +40,11 @@ public class UserJoinDTO {
 
   private UserAddress userAddress;
 
+  private UserRole userRole;
+
   @Builder
-  public UserJoinDTO(String username, String nickname, String password, String email, String mobileNumber, LocalDate birthday, UserGender gender, UserAddress userAddress) {
+  public UserJoinDTO(String username, String nickname, String password, String email, String mobileNumber, LocalDate birthday,
+                     UserGender gender, UserAddress userAddress, UserRole userRole) {
     this.username = username;
     this.nickname = nickname;
     this.password = password;
@@ -49,5 +53,6 @@ public class UserJoinDTO {
     this.birthday = birthday;
     this.gender = gender;
     this.userAddress = userAddress;
+    this.userRole = userRole;
   }
 }

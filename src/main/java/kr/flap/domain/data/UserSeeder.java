@@ -45,7 +45,7 @@ public class UserSeeder implements BaseSeeder{
             .username("User" + index)
             .nickname("Nickname" + index)
             .status(UserStatus.ACTIVE)
-            .role(UserRole.USER)
+            .role(UserRole.ROLE_USER)
             .grade(UserGrade.BRONZE)
             .email("user" + index + "@example.com")
             .mobileNumber("010-1234-567" + index)

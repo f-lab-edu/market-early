@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static kr.flap.domain.model.user.enums.UserGrade.*;
-import static kr.flap.domain.model.user.enums.UserRole.ADMIN;
-import static kr.flap.domain.model.user.enums.UserRole.USER;
+import static kr.flap.domain.model.user.enums.UserRole.ROLE_ADMIN;
+import static kr.flap.domain.model.user.enums.UserRole.ROLE_USER;
 import static kr.flap.domain.model.user.enums.UserStatus.ACTIVE;
 import static kr.flap.domain.model.user.enums.UserStatus.INACTIVE;
 import static kr.flap.factory.FakeDataFactory.*;
@@ -147,7 +147,7 @@ class UserTest {
     assertThat(user1.getEmail()).isEqualTo("test1@test.com");
     assertThat(user1.getGrade()).isEqualTo(BRONZE);
     assertThat(user1.getBirthday()).isEqualTo("1991-01-01");
-    assertThat(user1.getRole()).isEqualTo(USER);
+    assertThat(user1.getRole()).isEqualTo(ROLE_USER);
     assertThat(user1.getStatus()).isEqualTo(ACTIVE);
     assertThat(user1.getMobileNumber()).isEqualTo("010-1111-1111");
     assertThat(user1.getNickname()).isEqualTo("testUser1");
@@ -156,7 +156,7 @@ class UserTest {
     assertThat(user2.getEmail()).isEqualTo("test2@test.com");
     assertThat(user2.getGrade()).isEqualTo(SILVER);
     assertThat(user2.getBirthday()).isEqualTo("1992-01-01");
-    assertThat(user2.getRole()).isEqualTo(ADMIN);
+    assertThat(user2.getRole()).isEqualTo(ROLE_ADMIN);
     assertThat(user2.getStatus()).isEqualTo(INACTIVE);
     assertThat(user2.getMobileNumber()).isEqualTo("010-2222-2222");
     assertThat(user2.getNickname()).isEqualTo("testUser2");
@@ -166,7 +166,7 @@ class UserTest {
     assertThat(user3.getEmail()).isEqualTo("test3@test.com");
     assertThat(user3.getGrade()).isEqualTo(GOLD);
     assertThat(user3.getBirthday()).isEqualTo("1993-01-01");
-    assertThat(user3.getRole()).isEqualTo(USER);
+    assertThat(user3.getRole()).isEqualTo(ROLE_USER);
     assertThat(user3.getStatus()).isEqualTo(ACTIVE);
     assertThat(user3.getMobileNumber()).isEqualTo("010-3333-3333");
     assertThat(user3.getNickname()).isEqualTo("testUser3");
@@ -183,7 +183,7 @@ class UserTest {
     user1.setNickname("testUser1Updated");
     user1.setGrade(GOLD);
     user1.setBirthday(LocalDate.parse("1991-02-01"));
-    user1.setRole(ADMIN);
+    user1.setRole(ROLE_ADMIN);
     user1.setStatus(INACTIVE);
     user1.setMobileNumber("010-4444-4444");
     user1.setPassword("testpassword1Updated");
@@ -195,7 +195,7 @@ class UserTest {
     assertThat(updateUser.getEmail()).isEqualTo("test1@test.com");
     assertThat(updateUser.getGrade()).isEqualTo(GOLD);
     assertThat(updateUser.getBirthday()).isEqualTo("1991-02-01");
-    assertThat(updateUser.getRole()).isEqualTo(ADMIN);
+    assertThat(updateUser.getRole()).isEqualTo(ROLE_ADMIN);
     assertThat(updateUser.getStatus()).isEqualTo(INACTIVE);
     assertThat(updateUser.getMobileNumber()).isEqualTo("010-4444-4444");
     assertThat(updateUser.getNickname()).isEqualTo("testUser1Updated");

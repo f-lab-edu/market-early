@@ -10,6 +10,7 @@ import kr.flap.domain.model.reserve.Reserve;
 import kr.flap.domain.model.user.User;
 import kr.flap.domain.model.user.UserAddress;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +18,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 @Service
-@AllArgsConstructor
 @Transactional
 public class DatabaseSeederService {
 
@@ -37,10 +38,29 @@ public class DatabaseSeederService {
   private final SubProductSeeder subProductSeeder;
   private final CategorySeeder categorySeeder;
 
+  public DatabaseSeederService(List<BaseSeeder> seeders, UserSeeder userSeeder, UserAddressSeeder userAddressSeeder, CartSeeder cartSeeder, ReserveSeeder reserveSeeder, OrderSeeder orderSeeder, DeliverySeeder deliverySeeder, ProductSeeder productSeeder, OrderProductSeeder orderProductSeeder, CartProductSeeder cartProductSeeder, SellerSeeder sellerSeeder, StorageSeeder storageSeeder, SubProductSeeder subProductSeeder, CategorySeeder categorySeeder) {
+    this.seeders = seeders;
+    this.userSeeder = userSeeder;
+    this.userAddressSeeder = userAddressSeeder;
+    this.cartSeeder = cartSeeder;
+    this.reserveSeeder = reserveSeeder;
+    this.orderSeeder = orderSeeder;
+    this.deliverySeeder = deliverySeeder;
+    this.productSeeder = productSeeder;
+    this.orderProductSeeder = orderProductSeeder;
+    this.cartProductSeeder = cartProductSeeder;
+    this.sellerSeeder = sellerSeeder;
+    this.storageSeeder = storageSeeder;
+    this.subProductSeeder = subProductSeeder;
+    this.categorySeeder = categorySeeder;
+  }
+
   public void seedDatabase() {
     seeders.forEach(seeder -> {
       if(!seeder.isDataAlreadySeeded()) {
+        log.info("Seeding data with {}", seeder.getClass().getSimpleName());
         seeder.seed();
+        log.info("Seeding completed for {}", seeder.getClass().getSimpleName());
       }
     });
   }

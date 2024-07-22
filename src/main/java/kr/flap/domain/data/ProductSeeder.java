@@ -44,7 +44,6 @@ public class ProductSeeder implements BaseSeeder{
     return Product.builder()
             .shortDescription("Product" + i)
             .expirationDate(LocalDate.of(2999, 12, 31))
-            .mainImageUrl("https://www.google.com" + i)
             .build();
   }
 }

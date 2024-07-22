@@ -42,6 +42,7 @@ public class UserJoinService {
             .mobileNumber(userJoinDTO.getMobileNumber())
             .birthday(parseBirthday)
             .gender(userJoinDTO.getGender())
+            .role(userJoinDTO.getUserRole())
             .build();
 
     userRepository.save(user);
