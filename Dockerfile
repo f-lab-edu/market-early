@@ -29,6 +29,9 @@ ARG JAR_FILE=build/libs/curly-backend-0.0.1-SNAPSHOT.jar
 
 COPY ${JAR_FILE}  app.jar
 
+# 필요한 디렉토리 생성
+RUN mkdir -p /app/config/keystore
+
 # 컨테이너가 8080 포트를 외부에 노출하도록 설정합니다.
 EXPOSE 9191
 
