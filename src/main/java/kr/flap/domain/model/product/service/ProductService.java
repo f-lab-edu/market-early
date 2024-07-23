@@ -128,10 +128,6 @@ public class ProductService {
   }
 
   public Product createTestProduct(ProductCreateDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductCreateDto> subProductDtos) throws IOException {
-    log.info("Creating product with details: {}", productDto);
-    log.info("Seller details: {}", sellerDto);
-    log.info("Storage details: {}", storageDto);
-    log.info("Sub-products: {}", subProductDtos);
     Seller seller = Seller.builder().name(sellerDto.getName())
             .build();
     sellerRepository.save(seller);
@@ -173,7 +169,6 @@ public class ProductService {
             .collect(Collectors.toList());
 
     String mainImageUrl = imageUploadResponses.isEmpty() ? null : imageUploadResponses.get(0).getObjectUrl();
-    log.info("Main image URL: {}", mainImageUrl);
 
     Product product = Product.builder().shortDescription(productDto.getShortDescription())
             .expirationDate(productDto.getExpirationDate())
