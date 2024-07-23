@@ -56,6 +56,18 @@ public class ProductController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
   }
 
+  @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SELLER')")
+  @PostMapping(value = "/imageTest", consumes = {"application/json", "multipart/form-data"})
+  public ResponseEntity<ProductDto> createTestProduct(
+          @RequestPart("product") @Valid ProductCreateDto productDto,
+          @RequestPart("seller") @Valid SellerDto sellerDto,
+          @RequestPart("storage") @Valid StorageDto storageDto,
+          @RequestPart("subProducts") @Valid List<SubProductCreateDto> subProductDtos) throws IOException {
+    Product product = productService.createTestProduct(productDto, sellerDto, storageDto, subProductDtos);
+    ProductDto createdProduct = new ProductDto(product);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+  }
+
   @PostMapping(value = "/test", consumes = {"multipart/form-data"})
   public ResponseEntity<String> handleFileUpload(@RequestPart("files") List<MultipartFile> files,
                                                  @RequestPart("description") String description) {

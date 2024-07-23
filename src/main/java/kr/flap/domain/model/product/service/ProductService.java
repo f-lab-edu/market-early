@@ -7,12 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,5 +123,84 @@ public class ProductService {
   public void deleteProduct(BigInteger id) {
     productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
     productRepository.deleteById(id);
+  }
+
+  public Product createTestProduct(ProductCreateDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductCreateDto> subProductDtos) throws IOException {
+    Seller seller = Seller.builder().name(sellerDto.getName())
+            .build();
+    sellerRepository.save(seller);
+
+    Storage storage = Storage.builder().type(storageDto.getType())
+            .build();
+
+    storageRepository.save(storage);
+    // Log the current working directory
+    String currentWorkingDir = System.getProperty("user.dir");
+    log.info("Current working directory: {}", currentWorkingDir);
+
+    String[] imagePaths = {
+            currentWorkingDir + "/image/architecture.png",
+            currentWorkingDir + "/image/market-early-erd-v3.png",
+            currentWorkingDir + "/image/new_architecture.png"
+    };
+
+    List<MultipartFile> mockImages = new ArrayList<>();
+    for (String imagePath : imagePaths) {
+      Path path = Path.of(imagePath);
+      String fileName = path.getFileName().toString();
+      MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", Files.readAllBytes(path));
+      mockImages.add(multipartFile);
+    }
+
+    List<ImageUploadResponse> imageUploadResponses = mockImages.stream()
+            .map(file -> {
+              try {
+                return naverCloudService.uploadImage(file);
+              } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image", e);
+              }
+            })
+            .collect(Collectors.toList());
+
+    String mainImageUrl = imageUploadResponses.isEmpty() ? null : imageUploadResponses.get(0).getObjectUrl();
+
+    Product product = Product.builder().shortDescription(productDto.getShortDescription())
+            .expirationDate(productDto.getExpirationDate())
+            .mainImageUrl(mainImageUrl)
+            .seller(seller)
+            .storage(storage)
+            .build();
+    productRepository.save(product);
+
+    List<ProductImage> productImages = imageUploadResponses.stream()
+            .map(response -> ProductImage.builder()
+                    .product(product)
+                    .imageUrl(response.getObjectUrl())
+                    .eTag(response.getETag())
+                    .build())
+            .collect(Collectors.toList());
+
+    productImageRepository.saveAll(productImages);
+
+    subProductDtos.forEach(subProductDto -> {
+      SubProduct subProduct = SubProduct.builder().name(subProductDto.getName())
+              .brand(subProductDto.getBrand())
+              .tag(subProductDto.getTag())
+              .basePrice(subProductDto.getBasePrice())
+              .retailPrice(subProductDto.getRetailPrice())
+              .discountPrice(subProductDto.getDiscountPrice())
+              .discountRate(subProductDto.getDiscountRate())
+              .restock(subProductDto.getRestock())
+              .canRestockNotify(subProductDto.getCanRestockNotify())
+              .minQuantity(subProductDto.getMinQuantity())
+              .maxQuantity(subProductDto.getMaxQuantity())
+              .isSoldOut(subProductDto.getIsSoldOut())
+              .isPurchaseStatus(subProductDto.getIsPurchaseStatus())
+              .product(product)
+              .build();
+      subProductRepository.save(subProduct);
+    });
+
+    return productRepository.save(product);
   }
 }
