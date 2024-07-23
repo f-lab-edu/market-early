@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -147,10 +148,11 @@ public class ProductService {
     for (String imagePath : imagePaths) {
       Resource resource = resourceLoader.getResource(imagePath);
       String fileName = resource.getFilename();
-      byte[] content = Files.readAllBytes(resource.getFile().toPath());
-      assert fileName != null;
-      MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", content);
-      mockImages.add(multipartFile);
+      try (InputStream inputStream = resource.getInputStream()) {
+        byte[] content = inputStream.readAllBytes();
+        MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", content);
+        mockImages.add(multipartFile);
+      }
     }
 
     List<ImageUploadResponse> imageUploadResponses = mockImages.stream()
