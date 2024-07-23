@@ -33,6 +33,12 @@ public class JWTFilter extends OncePerRequestFilter {
       return;
     }
 
+    // 특정 엔드포인트에 대해서는 JWT 인증을 생략
+    if (requestURI.startsWith("/v1/products/imageTest")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // JWT 토큰을 쿠키에서 추출
     String token = null;
     Cookie[] cookies = request.getCookies();
