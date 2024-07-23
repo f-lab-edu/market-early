@@ -5,6 +5,8 @@ import kr.flap.domain.model.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
@@ -15,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class ProductService {
   private final SubProductRepository subProductRepository;
   private final ProductImageRepository productImageRepository;
   private final NaverCloudService naverCloudService;
+  private final ResourceLoader resourceLoader;
 
   public List<ProductDto> findAll() {
     List<Product> products = productRepository.findFetchAll();
@@ -133,22 +135,21 @@ public class ProductService {
     Storage storage = Storage.builder().type(storageDto.getType())
             .build();
 
-    storageRepository.save(storage);
-    // Log the current working directory
-    String currentWorkingDir = System.getProperty("user.dir");
-    log.info("Current working directory: {}", currentWorkingDir);
-
+    // 리소스 로더를 사용하여 JAR 내부의 리소스를 읽습니다.
     String[] imagePaths = {
-            currentWorkingDir + "/image/architecture.png",
-            currentWorkingDir + "/image/market-early-erd-v3.png",
-            currentWorkingDir + "/image/new_architecture.png"
+            "classpath:image/architecture.png",
+            "classpath:image/market-early-erd-v3.png",
+            "classpath:image/new_architecture.png"
     };
+
 
     List<MultipartFile> mockImages = new ArrayList<>();
     for (String imagePath : imagePaths) {
-      Path path = Path.of(imagePath);
-      String fileName = path.getFileName().toString();
-      MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", Files.readAllBytes(path));
+      Resource resource = resourceLoader.getResource(imagePath);
+      String fileName = resource.getFilename();
+      byte[] content = Files.readAllBytes(resource.getFile().toPath());
+      assert fileName != null;
+      MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", content);
       mockImages.add(multipartFile);
     }
 
