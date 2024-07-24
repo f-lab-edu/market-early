@@ -22,7 +22,7 @@ ARG JAR_FILE=build/libs/curly-backend-0.0.1-SNAPSHOT.jar
 COPY --from=build /app/${JAR_FILE} app.jar
 
 # secret 파일을 컨테이너의 /app/config/ 폴더로 복사
-COPY src/resources/application-secret.properties /app/config/application-secret.properties
+COPY src/main/resources/application-secret.properties /app/config/application-secret.properties
 
 # 컨테이너가 9191 포트를 외부에 노출하도록 설정합니다.
 EXPOSE 9191
