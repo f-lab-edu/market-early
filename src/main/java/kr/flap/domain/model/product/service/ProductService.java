@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -152,6 +151,9 @@ public class ProductService {
         byte[] content = inputStream.readAllBytes();
         MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", content);
         mockImages.add(multipartFile);
+      } catch (IOException e) {
+        log.error("Failed to read image file: {}", imagePath, e);
+        throw e;
       }
     }
 
@@ -160,6 +162,7 @@ public class ProductService {
               try {
                 return naverCloudService.uploadImage(file);
               } catch (IOException e) {
+                log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
                 throw new RuntimeException("Failed to upload image", e);
               }
             })

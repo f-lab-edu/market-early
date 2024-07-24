@@ -29,8 +29,11 @@ ARG JAR_FILE=build/libs/curly-backend-0.0.1-SNAPSHOT.jar
 
 COPY ${JAR_FILE}  app.jar
 
+# secret 파일을 컨테이너의 /app/config/ 폴더로 복사
+COPY --from=build /home/market/secret/application-secret.properties /app/config/application-secret.properties
+
 # 컨테이너가 8080 포트를 외부에 노출하도록 설정합니다.
 EXPOSE 9191
 
 # 컨테이너가 시작될 때 실행할 명령을 정의합니다. java -jar app.jar 명령을 실행하여 JAR 파일을 실행합니다.
-ENTRYPOINT ["java", "-Xms3g", "-Xmx3g", "-Dspring.profiles.active=prod,secret", "-jar", "app.jar", "--seeder=15000"]
+ENTRYPOINT ["java", "-Xms3g", "-Xmx3g", "-Dspring.profiles.active=prod,secret", "-jar", "app.jar", "--spring.config.additional-location=file:/app/config/application-secret.properties","--seeder=15000"]

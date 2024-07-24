@@ -56,7 +56,7 @@ public class ProductController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
   }
 
-  @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SELLER')")
+//  @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SELLER')")
   @PostMapping(value = "/imageTest", consumes = {"application/json", "multipart/form-data"})
   public ResponseEntity<ProductDto> createTestProduct(
           @RequestPart("product") @Valid ProductCreateDto productDto,
