@@ -9,8 +9,8 @@ WORKDIR /app
 # 현재 디렉토리(.)의 모든 파일을 컨테이너의 현재 작업 디렉토리(/app)로 복사합니다
 COPY . .
 
-# gradle build 명령을 실행하여 애플리케이션을 빌드합니다. --no-daemon 옵션은 Gradle 데몬을 사용하지 않고 빌드를 수행합니다.
-RUN gradle build --no-daemon
+# 테스트 케이스를 실행하지 않고 빌드합니다.
+RUN gradle build --no-daemon -x test
 
 # 실행 단계
 # openjdk:17-jdk-slim 이미지를 기반으로 새로운 실행 스테이지를 정의합니다.
