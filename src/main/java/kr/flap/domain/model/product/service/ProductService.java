@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class ProductService {
   private final StorageRepository storageRepository;
   private final SubProductRepository subProductRepository;
   private final ProductImageRepository productImageRepository;
+  private final ImageUploadService imageUploadService;
   private final NaverCloudService naverCloudService;
   private final ResourceLoader resourceLoader;
 
@@ -128,12 +131,11 @@ public class ProductService {
   }
 
   public Product createTestProduct(ProductCreateDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductCreateDto> subProductDtos) throws IOException {
-    Seller seller = Seller.builder().name(sellerDto.getName())
-            .build();
+    Seller seller = Seller.builder().name(sellerDto.getName()).build();
     sellerRepository.save(seller);
 
-    Storage storage = Storage.builder().type(storageDto.getType())
-            .build();
+    Storage storage = Storage.builder().type(storageDto.getType()).build();
+    storageRepository.save(storage);
 
     // 리소스 로더를 사용하여 JAR 내부의 리소스를 읽습니다.
     String[] imagePaths = {
@@ -141,7 +143,6 @@ public class ProductService {
             "classpath:image/market-early-erd-v3.png",
             "classpath:image/new_architecture.png"
     };
-
 
     List<MultipartFile> mockImages = new ArrayList<>();
     for (String imagePath : imagePaths) {
@@ -157,37 +158,43 @@ public class ProductService {
       }
     }
 
-    List<ImageUploadResponse> imageUploadResponses = mockImages.stream()
-            .map(file -> {
-              try {
-                return naverCloudService.uploadImage(file);
-              } catch (IOException e) {
-                log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
-                throw new RuntimeException("Failed to upload image", e);
-              }
-            })
+    // 비동기로 이미지 업로드 처리
+    List<CompletableFuture<ImageUploadResponse>> futures = mockImages.stream()
+            .map(imageUploadService::uploadImageAsync)
             .collect(Collectors.toList());
 
-    String mainImageUrl = imageUploadResponses.isEmpty() ? null : imageUploadResponses.get(0).getObjectUrl();
+    // 메인 트랜잭션에서는 기본 Product 정보와 SubProduct 정보만 저장
+    Product product = saveProductBaseInfo(productDto, seller, storage);
+    product.setSubProducts(saveSubProducts(subProductDtos, product));
 
+    // 비동기 작업 완료 후 후속 작업을 처리합니다.
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+            .thenAccept(v -> {
+              List<ImageUploadResponse> imageUploadResponses = futures.stream()
+                      .map(CompletableFuture::join)
+                      .collect(Collectors.toList());
+
+              updateProductWithImages(product, imageUploadResponses);
+            }).exceptionally(ex -> {
+              log.error("Failed to create product and related entities", ex);
+              return null;
+            });
+
+    return product;
+  }
+
+  public Product saveProductBaseInfo(ProductCreateDto productDto, Seller seller, Storage storage) {
     Product product = Product.builder().shortDescription(productDto.getShortDescription())
             .expirationDate(productDto.getExpirationDate())
-            .mainImageUrl(mainImageUrl)
             .seller(seller)
             .storage(storage)
             .build();
     productRepository.save(product);
+    return product;
+  }
 
-    List<ProductImage> productImages = imageUploadResponses.stream()
-            .map(response -> ProductImage.builder()
-                    .product(product)
-                    .imageUrl(response.getObjectUrl())
-                    .eTag(response.getETag())
-                    .build())
-            .collect(Collectors.toList());
-
-    productImageRepository.saveAll(productImages);
-
+  public List<SubProduct> saveSubProducts(List<SubProductCreateDto> subProductDtos, Product product) {
+    List<SubProduct> returnSubProductList = new ArrayList<>();
     subProductDtos.forEach(subProductDto -> {
       SubProduct subProduct = SubProduct.builder().name(subProductDto.getName())
               .brand(subProductDto.getBrand())
@@ -204,9 +211,27 @@ public class ProductService {
               .isPurchaseStatus(subProductDto.getIsPurchaseStatus())
               .product(product)
               .build();
-      subProductRepository.save(subProduct);
+      returnSubProductList.add(subProductRepository.save(subProduct));
     });
+    return returnSubProductList;
+  }
 
-    return productRepository.save(product);
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void updateProductWithImages(Product product, List<ImageUploadResponse> imageUploadResponses) {
+    String mainImageUrl = imageUploadResponses.isEmpty() ? null : imageUploadResponses.get(0).getObjectUrl();
+    product.setMainImageUrl(mainImageUrl);
+    productRepository.save(product);
+
+    List<ProductImage> productImages = imageUploadResponses.stream()
+            .map(response -> ProductImage.builder()
+                    .product(product)
+                    .imageUrl(response.getObjectUrl())
+                    .eTag(response.getETag())
+                    .build())
+            .collect(Collectors.toList());
+
+    productImageRepository.saveAll(productImages);
+
+    log.info("Product and related entities saved successfully");
   }
 }
