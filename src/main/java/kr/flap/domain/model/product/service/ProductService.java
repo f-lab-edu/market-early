@@ -67,8 +67,8 @@ public class ProductService {
 
     List<ImageUploadResponse> imageUploadResponses = images.stream()
             .map(file -> {
-              try {
-                return naverCloudService.uploadImage(file);
+              try (InputStream inputStream = file.getInputStream()) {
+                return naverCloudService.uploadImage(inputStream, file.getOriginalFilename(), file.getSize(), file.getContentType());
               } catch (IOException e) {
                 throw new RuntimeException("Failed to upload image", e);
               }

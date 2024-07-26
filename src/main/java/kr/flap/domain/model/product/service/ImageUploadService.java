@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -17,13 +18,15 @@ public class ImageUploadService {
 
   private final NaverCloudService naverCloudService;
 
-  @Async
+  @Async("taskExecutor")
   public CompletableFuture<ImageUploadResponse> uploadImageAsync(MultipartFile file) {
-    try {
-      return CompletableFuture.completedFuture(naverCloudService.uploadImage(file));
-    } catch (IOException e) {
-      log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
-      throw new RuntimeException("Failed to upload image", e);
-    }
+    return CompletableFuture.supplyAsync(() -> {
+      try (InputStream inputStream = file.getInputStream()) {
+        return naverCloudService.uploadImage(inputStream, file.getOriginalFilename(), file.getSize(), file.getContentType());
+      } catch (IOException e) {
+        log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
+        throw new RuntimeException("Failed to upload image", e);
+      }
+    });
   }
 }
