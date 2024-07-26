@@ -19,7 +19,7 @@ public class ThreadPoolAdjuster {
     this.taskExecutor = taskExecutor;
   }
 
-  @Scheduled(fixedRate = 5000) // 5초마다 실행
+  @Scheduled(fixedRate = 1000) // 5초마다 실행
   public void adjustThreadPool() {
     int activeCount = taskExecutor.getActiveCount();
     int poolSize = taskExecutor.getPoolSize();
