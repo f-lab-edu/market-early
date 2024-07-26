@@ -18,7 +18,7 @@ public class ImageUploadService {
 
   private final NaverCloudService naverCloudService;
 
-  @Async("taskExecutor")
+  @Async
   public CompletableFuture<ImageUploadResponse> uploadImageAsync(MultipartFile file) {
     return CompletableFuture.supplyAsync(() -> {
       try (InputStream inputStream = file.getInputStream()) {
