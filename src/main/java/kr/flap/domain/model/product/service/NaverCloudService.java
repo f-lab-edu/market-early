@@ -49,54 +49,26 @@ public class NaverCloudService {
 
   private final RestTemplate restTemplate;
 
-  public String getRandomImageJson() {
-    String url = apiUrl + "?client_id=" + unSplashAccessKey;
-    return restTemplate.getForObject(url, String.class);
-  }
-
-  public ByteArrayInputStream getRandomImageStream() throws IOException {
-    String url = apiUrl + "?client_id=" + unSplashAccessKey;
-
-    UnsplashDto response = restTemplate.getForObject(url, UnsplashDto.class);
-
-    if (response != null && response.getLinks() != null) {
-      String downloadLocation = response.getLinks().getDownloadLocation();
-      log.info("downloadLocation = " + downloadLocation);
-
-      byte[] imageData = downloadImage(response.getLinks().getDownload());
-      if (imageData != null) {
-        return new ByteArrayInputStream(imageData);
-      }
-    }
-    return new ByteArrayInputStream(new byte[0]);
-  }
-
-
-// 다른 import 문들과 함께 추가
-
-  public ImageUploadResponse uploadImage(MultipartFile file) throws IOException {
+  public ImageUploadResponse uploadImage(InputStream inputStream, String filename, long contentLength, String contentType) throws IOException {
     final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(objectStorageAccessKey, objectStorageSecretKey)))
             .build();
 
     String bucketName = "test-image-upload";
-    String objectKey = "uploads/" + UUID.randomUUID().toString() + ".jpg"; // 고유한 파일 이름 생성
+    String objectKey = "uploads/" + UUID.randomUUID().toString() + "_" + filename;
 
     ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentLength(file.getSize());
-    metadata.setContentType(file.getContentType());
+    metadata.setContentLength(contentLength);
+    metadata.setContentType(contentType);
 
-    try (InputStream inputStream = file.getInputStream()) {
-      PutObjectResult result = s3.putObject(new PutObjectRequest(bucketName, objectKey, inputStream, metadata)
-              .withCannedAcl(CannedAccessControlList.PublicRead));
-      String objetUrl = s3.getUrl(bucketName, objectKey).toString();
-      String eTag = result.getETag();
+    PutObjectResult result = s3.putObject(new PutObjectRequest(bucketName, objectKey, inputStream, metadata)
+            .withCannedAcl(CannedAccessControlList.PublicRead));
+    String objectUrl = s3.getUrl(bucketName, objectKey).toString();
+    String eTag = result.getETag();
 
-      return new ImageUploadResponse(objetUrl, eTag);
-    }
+    return new ImageUploadResponse(objectUrl, eTag);
   }
-
 
   private byte[] downloadImage(String downloadUrl) throws IOException {
     URL url = new URL(downloadUrl);
