@@ -4,12 +4,16 @@ import kr.flap.domain.model.product.*;
 import kr.flap.domain.model.product.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,13 @@ public class ProductService {
   private final ImageUploadService imageUploadService;
   private final NaverCloudService naverCloudService;
   private final ResourceLoader resourceLoader;
+  private final RedisTemplate<String, Object> redisTemplate;
+  private final ChannelTopic topic;
+  private final ImagePublishService imagePublishService;
+
+  @Value("${redis.stream.key}")
+  private String streamKey;
+
 
   public List<ProductDto> findAll() {
     List<Product> products = productRepository.findFetchAll();
@@ -135,11 +145,9 @@ public class ProductService {
     // 메인 트랜잭션에서는 기본 Product 정보와 SubProduct 정보만 저장
     Seller seller = Seller.builder().name(sellerDto.getName()).build();
     sellerRepository.save(seller);
-    log.info("Saved seller with id: " + seller.getId());
 
     Storage storage = Storage.builder().type(storageDto.getType()).build();
     storageRepository.save(storage);
-    log.info("Saved storage with id: " + storage.getId());
 
     // 리소스 로더를 사용하여 JAR 내부의 리소스를 읽습니다.
     String[] imagePaths = {
@@ -168,7 +176,6 @@ public class ProductService {
             .storage(storage)
             .build();
     productRepository.save(product);
-    log.info("Saved product with id: " + product.getId());
 
     List<SubProduct> subProducts = subProductDtos.stream()
             .map(subProductDto -> SubProduct.builder()
@@ -192,25 +199,25 @@ public class ProductService {
 
     product.setSubProducts(subProducts);
 
-    // 비동기로 이미지 업로드 처리
-    List<CompletableFuture<ImageUploadResponse>> futures = mockImages.stream()
-            .map(imageUploadService::uploadImageAsync)
-            .collect(Collectors.toList());
 
-    // 비동기 작업 완료 후 후속 작업을 처리합니다.
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-            .thenAccept(v -> {
-              List<ImageUploadResponse> imageUploadResponses = futures.stream()
-                      .map(CompletableFuture::join)
-                      .collect(Collectors.toList());
-
-              updateProductWithImages(product, imageUploadResponses);
-            }).exceptionally(ex -> {
-              log.error("Failed to create product and related entities", ex);
-              return null;
-            });
-
+    // 이미지 업로드 작업을 별도의 스레드에서 비동기적으로 수행
+    mockImages.forEach(file -> {
+      CompletableFuture.runAsync(() -> {
+        try {
+          ImageUploadMessage message = createImageUploadMessage(product.getId(), file);
+          imagePublishService.publishImageUploadMessage(message);
+        } catch (Exception e) {
+          log.error("Failed to publish image upload message: {}", e.getMessage());
+        }
+      });
+    });
     return product;
+  }
+
+  // 이미지 업로드 메시지 생성
+  private ImageUploadMessage createImageUploadMessage(BigInteger productId, MultipartFile file) throws IOException {
+    String encodedFile = Base64.getEncoder().encodeToString(file.getBytes());
+    return new ImageUploadMessage(productId.toString(), encodedFile);
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

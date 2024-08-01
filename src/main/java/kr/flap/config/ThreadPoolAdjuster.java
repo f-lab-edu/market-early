@@ -3,7 +3,6 @@ package kr.flap.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,7 @@ public class ThreadPoolAdjuster {
     this.taskExecutor = taskExecutor;
   }
 
-  @Scheduled(fixedRate = 300) // 0.3초마다 실행
+//  @Scheduled(fixedRate = 300) // 0.3초마다 실행
   public void adjustThreadPool() {
     int activeCount = taskExecutor.getActiveCount();
     int poolSize = taskExecutor.getPoolSize();
