@@ -142,18 +142,19 @@ public class ProductService {
 
   @Transactional
   public Product createTestProduct(ProductCreateDto productDto, SellerDto sellerDto, StorageDto storageDto, List<SubProductCreateDto> subProductDtos) throws IOException {
-    // 메인 트랜잭션에서는 기본 Product 정보와 SubProduct 정보만 저장
+    log.info("Creating test product with description: {}", productDto.getShortDescription());
+
     Seller seller = Seller.builder().name(sellerDto.getName()).build();
     sellerRepository.save(seller);
+    log.debug("Saved seller: {}", seller);
 
     Storage storage = Storage.builder().type(storageDto.getType()).build();
     storageRepository.save(storage);
+    log.debug("Saved storage: {}", storage);
 
-    // 리소스 로더를 사용하여 JAR 내부의 리소스를 읽습니다.
+    // JAR 내부의 리소스를 읽습니다.
     String[] imagePaths = {
             "classpath:image/architecture.png",
-//            "classpath:image/market-early-erd-v3.png",
-//            "classpath:image/new_architecture.png"
     };
 
     List<MultipartFile> mockImages = new ArrayList<>();
@@ -164,6 +165,7 @@ public class ProductService {
         byte[] content = inputStream.readAllBytes();
         MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "image/png", content);
         mockImages.add(multipartFile);
+        log.debug("Loaded mock image: {}", fileName);
       } catch (IOException e) {
         log.error("Failed to read image file: {}", imagePath, e);
         throw e;
@@ -176,6 +178,7 @@ public class ProductService {
             .storage(storage)
             .build();
     productRepository.save(product);
+    log.info("Product saved with ID: {}", product.getId());
 
     List<SubProduct> subProducts = subProductDtos.stream()
             .map(subProductDto -> SubProduct.builder()
@@ -196,9 +199,9 @@ public class ProductService {
                     .build())
             .collect(Collectors.toList());
     subProductRepository.saveAll(subProducts);
+    log.info("Sub-products saved for product ID: {}", product.getId());
 
     product.setSubProducts(subProducts);
-
 
     // 이미지 업로드 작업을 별도의 스레드에서 비동기적으로 수행
     mockImages.forEach(file -> {
@@ -206,13 +209,17 @@ public class ProductService {
         try {
           ImageUploadMessage message = createImageUploadMessage(product.getId(), file);
           imagePublishService.publishImageUploadMessage(message);
+          log.debug("Published image upload message for product ID: {}", product.getId());
         } catch (Exception e) {
-          log.error("Failed to publish image upload message: {}", e.getMessage());
+          log.error("Failed to publish image upload message for product ID: {}", product.getId(), e);
         }
       });
     });
+
+    log.info("Finished creating test product with ID: {}", product.getId());
     return product;
   }
+
 
   // 이미지 업로드 메시지 생성
   private ImageUploadMessage createImageUploadMessage(BigInteger productId, MultipartFile file) throws IOException {

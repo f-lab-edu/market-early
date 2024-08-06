@@ -6,6 +6,7 @@ import kr.flap.domain.model.product.dto.*;
 import kr.flap.domain.model.product.service.ProductService;
 import kr.flap.domain.model.product.validation.ValidId;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/products")
@@ -62,9 +64,23 @@ public class ProductController {
           @RequestPart("seller") @Valid SellerDto sellerDto,
           @RequestPart("storage") @Valid StorageDto storageDto,
           @RequestPart("subProducts") @Valid List<SubProductCreateDto> subProductDtos) throws IOException {
-    Product product = productService.createTestProduct(productDto, sellerDto, storageDto, subProductDtos);
-    ProductDto createdProduct = new ProductDto(product);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+
+    log.info("Start createTestProduct");
+    log.debug("Received productDto: {}", productDto);
+    log.debug("Received sellerDto: {}", sellerDto);
+    log.debug("Received storageDto: {}", storageDto);
+    log.debug("Received subProductDtos: {}", subProductDtos);
+
+    try {
+      Product product = productService.createTestProduct(productDto, sellerDto, storageDto, subProductDtos);
+      ProductDto createdProduct = new ProductDto(product);
+
+      log.info("Product created successfully with ID: {}", createdProduct.getId());
+      return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    } catch (Exception e) {
+      log.error("Error occurred while creating product: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
   }
 
   @PostMapping(value = "/test", consumes = {"multipart/form-data"})
