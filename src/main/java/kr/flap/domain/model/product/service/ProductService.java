@@ -152,8 +152,8 @@ public class ProductService {
     // 리소스 로더를 사용하여 JAR 내부의 리소스를 읽습니다.
     String[] imagePaths = {
             "classpath:image/architecture.png",
-            "classpath:image/market-early-erd-v3.png",
-            "classpath:image/new_architecture.png"
+//            "classpath:image/market-early-erd-v3.png",
+//            "classpath:image/new_architecture.png"
     };
 
     List<MultipartFile> mockImages = new ArrayList<>();
