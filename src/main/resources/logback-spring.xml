@@ -13,14 +13,13 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Daily rollover with a max history of 30 days -->
             <fileNamePattern>logs/app-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
     </appender>
 
     <!-- Root logger configuration -->
-    <root level="INFO">
+    <root level="DEBUG"> <!-- DEBUG로 변경 -->
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </root>
