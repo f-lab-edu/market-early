@@ -22,8 +22,15 @@ public class ImagePublishService {
 
   @Async
   public void publishImageUploadMessage(ImageUploadMessage message) {
+    String s = String.valueOf(message.getTimestamp());
+    System.out.println("s = " + s);
     try {
-      MapRecord<String, String, String> record = MapRecord.create(streamKey, Map.of("productId", message.getProductId(), "encodedFile", message.getEncodedFile()));
+      MapRecord<String, String, String> record = MapRecord.create(streamKey, Map.of(
+              "productId", message.getProductId(),
+              "encodedFile", message.getEncodedFile(),
+              "timestamp", String.valueOf(message.getTimestamp())
+      ));
+
       redisTemplate.opsForStream().add(record);
 //      log.info("Published image upload message to stream: {}", message);
     } catch (Exception e) {

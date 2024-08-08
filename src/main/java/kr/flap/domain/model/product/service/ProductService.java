@@ -207,6 +207,7 @@ public class ProductService {
     mockImages.forEach(file -> {
       CompletableFuture.runAsync(() -> {
         try {
+          //메세지 생성 시 타임스탬프 설정
           ImageUploadMessage message = createImageUploadMessage(product.getId(), file);
           imagePublishService.publishImageUploadMessage(message);
           log.debug("Published image upload message for product ID: {}", product.getId());
@@ -223,8 +224,9 @@ public class ProductService {
 
   // 이미지 업로드 메시지 생성
   private ImageUploadMessage createImageUploadMessage(BigInteger productId, MultipartFile file) throws IOException {
+    long currentTimestamp = System.currentTimeMillis();
     String encodedFile = Base64.getEncoder().encodeToString(file.getBytes());
-    return new ImageUploadMessage(productId.toString(), encodedFile);
+    return new ImageUploadMessage(productId.toString(), encodedFile,currentTimestamp);
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
