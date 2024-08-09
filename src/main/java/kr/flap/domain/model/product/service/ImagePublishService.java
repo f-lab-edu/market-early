@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
@@ -19,6 +21,9 @@ public class ImagePublishService {
 
   @Value("${redis.stream.key}")
   private String streamKey;
+
+  @Value("${redis.stream.group}")
+  private String groupName;
 
   @Async
   public void publishImageUploadMessage(ImageUploadMessage message) {
@@ -35,6 +40,26 @@ public class ImagePublishService {
 //      log.info("Published image upload message to stream: {}", message);
     } catch (Exception e) {
       log.error("Failed to publish message to stream", e);
+    }
+  }
+
+  public void publishTestImageUploadMessage(ImageUploadMessage message) {
+    long currentTime = Instant.now().toEpochMilli();
+    RecordId recordId = null;
+    try {
+      MapRecord<String, String, String> record = MapRecord.create(streamKey, Map.of(
+              "productId", message.getProductId(),
+              "encodedFile", message.getEncodedFile(),
+              "timestamp", String.valueOf(currentTime)
+      ));
+
+// 메시지를 스트림에 추가하고 ID를 가져옴
+      recordId = redisTemplate.opsForStream().add(record);
+
+    } catch (Exception e) {
+      log.error("Failed to publish message to stream", e);
+    } finally {
+      redisTemplate.opsForStream().delete(streamKey, recordId);
     }
   }
 }

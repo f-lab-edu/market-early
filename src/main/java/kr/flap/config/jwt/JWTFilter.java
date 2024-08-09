@@ -34,7 +34,7 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     // 특정 엔드포인트에 대해서는 JWT 인증을 생략
-    if (requestURI.startsWith("/v1/products/imageTest")) {
+    if (requestURI.startsWith("/v1/products/imageTest") || requestURI.startsWith("/test/products/redis/image")  ) {
       filterChain.doFilter(request, response);
       return;
     }

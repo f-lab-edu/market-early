@@ -54,6 +54,7 @@ public class SecurityConfig {
             .requestMatchers("/v1/users/**").permitAll()
             .requestMatchers("/v1/products/**").permitAll()
             .requestMatchers("/v1/payments/**").permitAll()
+            .requestMatchers("/test/**").permitAll()
             .requestMatchers("/success").permitAll()
             .requestMatchers("/confirm").permitAll()
             .requestMatchers("/style.css").permitAll()
